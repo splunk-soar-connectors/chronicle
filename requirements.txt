@@ -1,0 +1,13 @@
+beautifulsoup4==4.9.1
+cachetools==4.1.1
+google-auth-httplib2==0.0.3
+google-auth-oauthlib==0.4.1
+google_api_python_client==1.9.3
+google_auth==1.18.0
+httplib2==0.18.1
+oauthclient==4.1.3
+pyasn==0.4.6
+pyasn_modules==0.2.8
+requests==2.25.0
+rsa
+uritemplate==3.0.1
