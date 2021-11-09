@@ -1,0 +1,32 @@
+<b>Chronicle Release Notes - Published by Google September 13, 2021</b>
+<br><br>
+<b>Version 2.1.0 - Released September 13, 2021</b>
+<ul>
+<li>Fixed a bug to trigger active playbooks for every ingested artifact</li>
+</ul>
+<b>Version 2.0.0 - Released March 16, 2021</b>
+<ul>
+<li>Added new actions ‘list rules’ and ‘list detections’ (Using v2 detection API)</li>
+<li>Added support for ‘user alert’ alert type in the 'list alert' action</li>
+<li>Added the functionality for backdating ingestion time window for interval/scheduled polling to prevent data loss</li>
+<li>Removed the API version provisioning from the Base URL asset configuration parameter</li>
+<li>Added support for the below modes in the ingestion action:</li>
+    <ul>
+        <li>User Alerts</li>
+        <li>Alerting Detections</li>
+        <li>Not-alerting Detections</li>
+        <li>All Alerts</li>
+        <li>All Detections</li>
+        <li>All (This mode is a replacement of the ‘Both’ mode in the 1.0.1 version of the Chronicle app)</li>
+    </ul>
+<li>Added below-mentioned asset configuration parameters:</li>
+    <ul>
+        <li>'Fetch all live rules created in the Detection Engine'</li>
+        <li>'Comma-separated Rule ID(s) (with or without versionId) for fetching the detections'</li>
+        <li>'Backdate Start Time in minutes (for scheduled polling)'</li>
+    </ul>
+</ul>
+<b>Version 1.0.1 - Released October 22, 2020</b>
+<ul>
+<li>Initial Release</li>
+</ul>
