@@ -1,28 +1,35 @@
-# --
 # File: chronicle_connector.py
 # Copyright (c) 2020-2021 Splunk Inc., Google LLC.
 #
-# Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt)
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# Phantom App imports
-import phantom.app as phantom
-from phantom.base_connector import BaseConnector
-from phantom.action_result import ActionResult
-
+import json
 import re
 import time
-import requests
-import json
-import httplib2
-from bs4 import BeautifulSoup
 from collections import defaultdict
 from datetime import datetime, timedelta
 from hashlib import sha256
 
-from chronicle_consts import *      # noqa
-
+import httplib2
+import phantom.app as phantom
+import requests
+from bs4 import BeautifulSoup
 from google.oauth2 import service_account
 from googleapiclient import _auth
+from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
+
+from chronicle_consts import *  # noqa
 
 
 class ChronicleConnector(BaseConnector):
@@ -3390,8 +3397,9 @@ class ChronicleConnector(BaseConnector):
 
 def main():
     """Use this method to debug action using input test JSON file."""
-    import pudb
     import argparse
+
+    import pudb
 
     pudb.set_trace()
 
