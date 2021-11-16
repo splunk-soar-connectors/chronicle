@@ -41,34 +41,34 @@ This app uses the google-auth-httplib2 module, which is licensed under the Apach
 This app uses the google-auth-oauthlib module, which is licensed under the Apache Software License
 (Apache 2.0), Copyright (c) Google Cloud Platform.
 
-### httplib2-wheel
+### httplib2
 
-This app uses the httplib2-wheel module, which is licensed under the MIT License (MIT), Copyright
+This app uses the httplib2 module, which is licensed under the MIT License (MIT), Copyright
 (c) Joe Gregorio.
 
-### oauthclient
+### oauth2client
 
-This app uses the oauthclient module, which is licensed under the Apache Software License (Apache
+This app uses the oauth2client module, which is licensed under the Apache Software License (Apache
 2.0), Copyright (c) Google Inc.
 
-### pyasn
+### pyasn1
 
-This app uses the pyasn module, which is licensed under the MIT License (MIT), Copyright (c) Hadi
+This app uses the pyasn1 module, which is licensed under the MIT License (MIT), Copyright (c) Hadi
 Asghari.
 
-### pyasn-modules
+### pyasn1-modules
 
-This app uses the pyasn-modules module, which is licensed under the BSD License (BSD-2-Clause),
+This app uses the pyasn1-modules module, which is licensed under the BSD License (BSD-2-Clause),
 Copyright (c) Ilya Etingof.
 
-### rsa-wheel
+### rsa
 
-This app uses the rsa-wheel module, which is licensed under the Apache Software License (ASL 2),
+This app uses the rsa module, which is licensed under the Apache Software License (ASL 2),
 Copyright (c) Sybren A. Stuvel.
 
-### uritemplate-wheel
+### uritemplate
 
-This app uses the uritemplate-wheel module, which is licensed under the OSI Approved, Apache
+This app uses the uritemplate module, which is licensed under the OSI Approved, Apache
 Software License, BSD License (BSD 3-Clause License or Apache License, Version 2.0), Copyright (c)
 Ian Stapleton Cordasco.
 
