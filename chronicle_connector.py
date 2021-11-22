@@ -59,11 +59,11 @@ class ChronicleConnector(BaseConnector):
         self._malicious_category = None
         self._malicious_severity = None
         self._malicious_str_confidence = None
-        self._malicious_int_confidence = None
+        self._malicious_ic = None
         self._suspicious_category = None
         self._suspicious_severity = None
         self._suspicious_str_confidence = None
-        self._suspicious_int_confidence = None
+        self._suspicious_ic = None
 
         # Ingestion variable initialization
         self._run_mode = None
@@ -407,8 +407,7 @@ class ChronicleConnector(BaseConnector):
             # Check for the time is in valid format or not
             time = datetime.strptime(date, GC_DATE_FORMAT)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            self.debug_print(f"Invalid date string received. Error occurred while checking date format. Error: {err_msg}")
+            self.debug_print(f"Invalid date string received. Error occurred while checking date format. Error: {str(e)}")
             return False, None
         return True, time
 
@@ -729,7 +728,7 @@ class ChronicleConnector(BaseConnector):
             error_msg_list.append("malicious_str_confidence_score")
 
         if mal_int_confidence:
-            ret_val, self._malicious_int_confidence = self._validate_comma_separated(action_result,
+            ret_val, self._malicious_ic = self._validate_comma_separated(action_result,
                                                                                      mal_int_confidence,
                                                                                      GC_CONFIG_MALICIOUS_INT_CONFIDENCE)
             if phantom.is_fail(ret_val):
@@ -758,7 +757,7 @@ class ChronicleConnector(BaseConnector):
             error_msg_list.append("suspicious_str_confidence_score")
 
         if susp_int_confidence:
-            ret_val, self._suspicious_int_confidence = self._validate_comma_separated(action_result,
+            ret_val, self._suspicious_ic = self._validate_comma_separated(action_result,
                                                                                       susp_int_confidence,
                                                                                       GC_CONFIG_SUSPICIOUS_INT_CONFIDENCE)
             if phantom.is_fail(ret_val):
@@ -807,9 +806,8 @@ class ChronicleConnector(BaseConnector):
         check.append(category in self._malicious_category)
         check.append(severity in self._malicious_severity)
         check.append(str_confidence in self._malicious_str_confidence)
-        if self._malicious_int_confidence:
-            is_conf_in_range = min(self._malicious_int_confidence) <= int(int_confidence) <= max(self._malicious_int_confidence)
-            check.append(int_confidence and is_conf_in_range)
+        if self._malicious_ic:
+            check.append(int_confidence and min(self._malicious_ic) <= int(int_confidence) <= max(self._malicious_ic))
 
         # Check for any of the above condition is true or not
         if any(check):
@@ -844,9 +842,8 @@ class ChronicleConnector(BaseConnector):
         check.append(category in self._suspicious_category)
         check.append(severity in self._suspicious_severity)
         check.append(str_confidence in self._suspicious_str_confidence)
-        if self._suspicious_int_confidence:
-            is_conf_in_range = min(self._suspicious_int_confidence) <= int(int_confidence) <= max(self._suspicious_int_confidence)
-            check.append(int_confidence and is_conf_in_range)
+        if self._suspicious_ic:
+            check.append(int_confidence and min(self._suspicious_ic) <= int(int_confidence) <= max(self._suspicious_ic))
 
         # Check for any of the above condition is true or not
         if any(check):
@@ -1011,8 +1008,10 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: asset alerts response with summary
         """
-        alerts_default = lambda: {"hostname": set(), "assetIpAddress": set(), "mac": set(), "productId": set()}
-        alerts_assets_association = defaultdict(alerts_default)
+        alerts_assets_association = defaultdict(lambda: {"hostname": set(),
+                                                         "assetIpAddress": set(),
+                                                         "mac": set(),
+                                                         "productId": set()})
         response_with_summary = dict()
         asset_alerts = list()
 
