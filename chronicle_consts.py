@@ -138,3 +138,6 @@ GC_STATE_FILE_CORRUPT_ERROR = "Error occurred while loading the state file due t
 GC_INVALID_RULE_IDS_MSG = "Provided Rule ID(s) are invalid. Please provide valid Rule ID(s)"
 GC_INVALID_REFERENCE_TIME_MSG = "Please provide valid reference time in the action parameter"
 GC_INVALID_INDICATOR_VALUE_MSG = "Received unexpected value for the 'asset indicator' action parameter"
+GC_ERR_CODE_MSG = "Error code unavailable"
+GC_ERR_MSG = "Unknown error occurred. Please check the asset configuration and|or action parameters"
+GC_PARSE_ERR_MSG = "Unable to parse the error message. Please check the asset configuration and|or action parameters."
