@@ -114,6 +114,7 @@ GC_INTERNAL_SERVER_ERROR = 'Internal server error occurred, please try again lat
 GC_INVALID_RESPONSE_FORMAT = 'Invalid response format while making an API call to Chronicle. Response not in JSON format.'
 GC_RATE_LIMIT_EXCEEDED = 'API rate limit exceeded. Please try after sometime.'
 GC_INVALID_ERR_RESPONSE_FORMAT = 'Invalid error response received from Chronicle. Error response not in JSON format.'
+GC_INVALID_INTEGER_ERR_MSG = "Please provide a valid integer value in the {parameter} parameter."
 GC_LIMIT_VALIDATION_ALLOW_ZERO_MSG = "Please provide zero or positive integer value in the {parameter} parameter."
 GC_LIMIT_VALIDATION_MSG = "Please provide a valid non-zero positive integer value in the {parameter} parameter."
 GC_TIME_RANGE_VALIDATION_MSG = "Please provide valid 'Time range' value in the action parameters. \

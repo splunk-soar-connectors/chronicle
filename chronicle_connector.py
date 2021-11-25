@@ -87,38 +87,6 @@ class ChronicleConnector(BaseConnector):
         # Ingestion time dictionary initialization
         self._time_dict = dict()
 
-    def _get_error_message_from_exception(self, e):
-        """ This method is used to get appropriate error messages from the exception.
-
-        Parameters:
-            :param e: Exception object
-        Returns:
-            :return: error message
-        """
-        error_msg = GC_ERR_MSG
-        error_code = GC_ERR_CODE_MSG
-        try:
-            if hasattr(e, "args"):
-                if len(e.args) > 1:
-                    error_code = e.args[0]
-                    error_msg = e.args[1]
-                elif len(e.args) == 1:
-                    error_code = GC_ERR_CODE_MSG
-                    error_msg = e.args[0]
-        except:
-            pass
-
-        try:
-            if error_code in GC_ERR_CODE_MSG:
-                error_text = f"Error Message: {error_msg}."
-            else:
-                error_text = f"Error Code: {error_code}. Error Message: {error_msg}."
-        except Exception as e:
-            self.debug_print(f"Error occurred while parsing error message: {str(e)}")
-            error_text = GC_PARSE_ERR_MSG
-
-        return error_text
-
     def _process_empty_response(self, response, action_result):
         """Process empty response.
 
@@ -184,8 +152,7 @@ class ChronicleConnector(BaseConnector):
                 # Invalid JSON received
                 return action_result.set_status(phantom.APP_ERROR, GC_INVALID_RESPONSE_FORMAT), None
             except Exception as e:
-                err_msg = self._get_error_message_from_exception(e)
-                return action_result.set_status(phantom.APP_ERROR, f"{GC_INVALID_RESPONSE_FORMAT} Error: {err_msg}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"{GC_INVALID_RESPONSE_FORMAT} Error: {str(e)}"), None
 
         # Parse error message
         err_message = self._parse_error_message(response[1])
@@ -259,8 +226,7 @@ class ChronicleConnector(BaseConnector):
             try:
                 response = client.request(url, method)
             except Exception as e:
-                err_msg = self._get_error_message_from_exception(e)
-                return action_result.set_status(phantom.APP_ERROR, f"Error connecting to server. Error: {err_msg}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"Error connecting to server. Error: {str(e)}"), None
 
             # Check for the response is present or not
             if not response:
@@ -273,9 +239,8 @@ class ChronicleConnector(BaseConnector):
                 self.debug_print(f"Received httplib2 response object: {response[0]}")
                 self.debug_print(f"Received original response: {response[1]}")
             except Exception as e:
-                err_msg = self._get_error_message_from_exception(e)
                 return action_result.set_status(phantom.APP_ERROR,
-                                                f"{GC_RESPONSE_ERROR}. Error while checking response. Error: {err_msg}"), None
+                                                f"{GC_RESPONSE_ERROR}. Error while checking response. Error: {str(e)}"), None
 
             # Expectation of response format (<object of httplib2.Response>, JSON response)
             if not isinstance(response[0], httplib2.Response):
@@ -390,8 +355,7 @@ class ChronicleConnector(BaseConnector):
         except OverflowError:
             return action_result.set_status(phantom.APP_ERROR, GC_UTC_SINCE_TIME_ERROR), None, None
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, f"{GC_TIME_RANGE_VALIDATION_MSG} . Error: {err_msg}"), None, None
+            return action_result.set_status(phantom.APP_ERROR, f"{GC_TIME_RANGE_VALIDATION_MSG} . Error: {str(e)}"), None, None
 
     def _check_date_format(self, date):
         """Validate the value of time parameter given in the action parameters.
@@ -580,6 +544,10 @@ class ChronicleConnector(BaseConnector):
             :return: integer value of the parameter
         """
         try:
+            if not float(parameter).is_integer():
+                action_result.set_status(phantom.APP_ERROR, GC_INVALID_INTEGER_ERR_MSG.format(parameter=key))
+                return None
+
             parameter = int(parameter)
 
             if parameter <= 0:
@@ -680,8 +648,7 @@ class ChronicleConnector(BaseConnector):
                     if is_lower:
                         value = list(map(lambda x: x.lower(), value))
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, GC_JSON_ERROR.format(key, f"Error : {err_msg}")), None
+            return action_result.set_status(phantom.APP_ERROR, GC_JSON_ERROR.format(key, f"Error : {str(e)}")), None
 
         return phantom.APP_SUCCESS, value
 
@@ -894,15 +861,13 @@ class ChronicleConnector(BaseConnector):
         try:
             credentials = service_account.Credentials.from_service_account_info(self._key_dict, scopes=self._scopes)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, f"Unable to load the key json. Error: {err_msg}"), None
+            return action_result.set_status(phantom.APP_ERROR, f"Unable to load the key json. Error: {str(e)}"), None
 
         # Build an HTTP client which can make authorized OAuth requests.
         try:
             http_client = _auth.authorized_http(credentials)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, f"Unable to create client. Error: {err_msg}"), None
+            return action_result.set_status(phantom.APP_ERROR, f"Unable to create client. Error: {str(e)}"), None
 
         return phantom.APP_SUCCESS, http_client
 
@@ -921,8 +886,7 @@ class ChronicleConnector(BaseConnector):
             self.debug_print(f'{GC_INVALID_ERR_RESPONSE_FORMAT} Response - {error}')
             return GC_INVALID_ERR_RESPONSE_FORMAT
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return f"{GC_INVALID_ERR_RESPONSE_FORMAT} Error: {err_msg}"
+            return f"{GC_INVALID_ERR_RESPONSE_FORMAT} Error: {str(e)}"
 
         # Fetch error code
         error_code = json_error.get('error', {}).get('code')
@@ -2046,8 +2010,7 @@ class ChronicleConnector(BaseConnector):
                 return action_result.set_status(phantom.APP_ERROR,
                                                 f"{GC_UTC_SINCE_TIME_ERROR} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
             except Exception as e:
-                err_msg = self._get_error_message_from_exception(e)
-                return action_result.set_status(phantom.APP_ERROR, f"{GC_ON_POLL_INVALID_TIME_ERROR} Error: {err_msg}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"{GC_ON_POLL_INVALID_TIME_ERROR} Error: {str(e)}"), None
 
         # Derive end time
         ret_val, end_time = self._derive_end_time(action_result, time)
@@ -3139,9 +3102,8 @@ class ChronicleConnector(BaseConnector):
             iocs = self._create_ioc_artifacts(iocs)
             self.debug_print(f"Total IoC artifacts created: {len(iocs)}")
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            self.debug_print(f"Error occurred while creating artifacts for IoCs. Error: {err_msg}")
-            self.save_progress(f"Error occurred while creating artifacts for IoCs. Error: {err_msg}")
+            self.debug_print(f"Error occurred while creating artifacts for IoCs. Error: {str(e)}")
+            self.save_progress(f"Error occurred while creating artifacts for IoCs. Error: {str(e)}")
             # Make iocs as empty list
             iocs = list()
 
@@ -3151,9 +3113,8 @@ class ChronicleConnector(BaseConnector):
             alerts = self._create_alert_artifacts(alerts)
             self.debug_print(f"Total Alert artifacts created: {len(alerts)}")
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            self.debug_print(f"Error occurred while creating artifacts for alerts. Error: {err_msg}")
-            self.save_progress(f"Error occurred while creating artifacts for alerts. Error: {err_msg}")
+            self.debug_print(f"Error occurred while creating artifacts for alerts. Error: {str(e)}")
+            self.save_progress(f"Error occurred while creating artifacts for alerts. Error: {str(e)}")
             # Make alerts as empty list
             alerts = list()
 
@@ -3163,9 +3124,8 @@ class ChronicleConnector(BaseConnector):
             user_alerts = self._create_user_alert_artifacts(user_alerts)
             self.debug_print(f"Total User Alerts artifacts created: {len(user_alerts)}")
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            self.debug_print(f"Error occurred while creating artifacts for user alerts. Error: {err_msg}")
-            self.save_progress(f"Error occurred while creating artifacts for user alerts. Error: {err_msg}")
+            self.debug_print(f"Error occurred while creating artifacts for user alerts. Error: {str(e)}")
+            self.save_progress(f"Error occurred while creating artifacts for user alerts. Error: {str(e)}")
             # Make alerts as empty list
             user_alerts = list()
 
@@ -3177,9 +3137,8 @@ class ChronicleConnector(BaseConnector):
             self.debug_print(f"Total Alerting detection artifacts created: {len(alerting_detections)}")
             self.debug_print(f"Total Not-alerting detection artifacts created: {len(not_alerting_detections)}")
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            self.debug_print(f"Error occurred while creating artifacts for detections. Error: {err_msg}")
-            self.save_progress(f"Error occurred while creating artifacts for detections. Error: {err_msg}")
+            self.debug_print(f"Error occurred while creating artifacts for detections. Error: {str(e)}")
+            self.save_progress(f"Error occurred while creating artifacts for detections. Error: {str(e)}")
             # Make alerts as empty list
             alerts = list()
 
