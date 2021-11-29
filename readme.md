@@ -53,8 +53,7 @@ This app uses the oauth2client module, which is licensed under the Apache Softwa
 
 ### pyasn1
 
-This app uses the pyasn1 module, which is licensed under the MIT License (MIT), Copyright (c) Hadi
-Asghari.
+This app uses the pyasn1 module, which is licensed under the MIT License (MIT), Copyright (c) Ilya Etingof.
 
 ### pyasn1-modules
 
