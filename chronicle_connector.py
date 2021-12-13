@@ -100,7 +100,7 @@ class ChronicleConnector(BaseConnector):
         if response[0].status == 200:
             return phantom.APP_SUCCESS, {}
 
-        return action_result.set_status(phantom.APP_ERROR, f"Status code: {response[0].status}."
+        return action_result.set_status(phantom.APP_ERROR, f"Status code: {response[0].status}. "
                                                             "Empty response and no information in the header"), None
 
     def _process_html_response(self, response, action_result):
@@ -696,8 +696,8 @@ class ChronicleConnector(BaseConnector):
 
         if mal_int_confidence:
             ret_val, self._malicious_ic = self._validate_comma_separated(action_result,
-                                                                                     mal_int_confidence,
-                                                                                     GC_CONFIG_MALICIOUS_INT_CONFIDENCE)
+                                                                         mal_int_confidence,
+                                                                         GC_CONFIG_MALICIOUS_INT_CONFIDENCE)
             if phantom.is_fail(ret_val):
                 self.debug_print(action_result.get_message())
                 error_int_score.append("malicious_int_confidence_score")
@@ -725,8 +725,8 @@ class ChronicleConnector(BaseConnector):
 
         if susp_int_confidence:
             ret_val, self._suspicious_ic = self._validate_comma_separated(action_result,
-                                                                                      susp_int_confidence,
-                                                                                      GC_CONFIG_SUSPICIOUS_INT_CONFIDENCE)
+                                                                          susp_int_confidence,
+                                                                          GC_CONFIG_SUSPICIOUS_INT_CONFIDENCE)
             if phantom.is_fail(ret_val):
                 self.debug_print(action_result.get_message())
                 error_int_score.append("suspicious_int_confidence_score")
@@ -1185,8 +1185,8 @@ class ChronicleConnector(BaseConnector):
             self.save_progress("Test Connectivity Failed")
             return ret_val
 
-        self.save_progress("Note: Test connectivity action will not validate other reputation and on poll related asset configuration \
-                            parameters for optimum performance. They will only be validated in their respective actions")
+        self.save_progress("Note: Test connectivity action will not validate other reputation and on poll related asset configuration "
+                            "parameters for optimum performance. They will only be validated in their respective actions")
         self.save_progress("Making REST call to Chronicle for fetching the list of IoCs...")
 
         endpoint = "/v1/ioc/listiocs?start_time=1970-01-01T00:00:00Z&page_size=1"
@@ -1792,8 +1792,7 @@ class ChronicleConnector(BaseConnector):
         end_time = time_param[GC_END_TIME_KEY]
 
         # Create list rules endpoint
-        fixed_endpoint = f'{GC_LIST_DETECTIONS_ENDPOINT}?pageSize=1000&\
-                         detectionStartTime={start_time}&detectionEndTime={end_time}'
+        fixed_endpoint = f'{GC_LIST_DETECTIONS_ENDPOINT}?pageSize=1000&detectionStartTime={start_time}&detectionEndTime={end_time}'
 
         if alert_state != 'ALL':
             fixed_endpoint += f'&alert_state={alert_state}'
@@ -2186,8 +2185,8 @@ class ChronicleConnector(BaseConnector):
 
         # Checking date format of retrieved date string from the state file
         self.debug_print(f"Check for '{run_mode.replace('_', ' ').title()}s'")
-        self.debug_print(f"Check that string date value {last_run_time} fetched from \
-                         the state file is in the correct format {GC_DATE_FORMAT} or not")
+        self.debug_print(f"Check that string date value {last_run_time} fetched from "
+                         f"the state file is in the correct format {GC_DATE_FORMAT} or not")
         # Check for date string format
         check, _ = self._check_date_format(last_run_time)
         if not check:
@@ -2195,8 +2194,8 @@ class ChronicleConnector(BaseConnector):
             first_run = True
             start_time = first_run_time
         else:
-            self.debug_print("Considering the retrieved last_run_time value from the state file \
-                             as the start_time for the next scheduled/interval poll")
+            self.debug_print("Considering the retrieved last_run_time value from the state file "
+                             "as the start_time for the next scheduled/interval poll")
             self.debug_print(f"Retrieved start_time for the {run_mode} run mode: {last_run_time}")
             # Next run for the scheduled/interval poll
             start_time = last_run_time
@@ -2332,8 +2331,8 @@ class ChronicleConnector(BaseConnector):
         for alert_info in alert_infos:
             # Ignore alerts which alert has configured severity to ingest
             if self._alerts_severity and alert_info.get('severity', '').lower() not in self._alerts_severity:
-                self.debug_print(f"Ignored alert: {alert_info.get('name', '')} \
-                                 which has severity: {alert_info.get('severity', '')}")
+                self.debug_print(f"Ignored alert: {alert_info.get('name', '')} "
+                                 f"which has severity: {alert_info.get('severity', '')}")
                 continue
 
             # Create 'cef' type artifact for individual alert by adding corresponding asset infos with alert infos
@@ -2431,8 +2430,8 @@ class ChronicleConnector(BaseConnector):
         try:
             confidence_int = list(map(lambda x: str(x), confidence_int))
         except Exception as e:
-            self.debug_print(f"Error occurred while converting intRawConfidenceScore value to 'str' type from 'int' type. \
-                             Error: {str(e)}")
+            self.debug_print(f"Error occurred while converting intRawConfidenceScore value to 'str' type from 'int' type. "
+                             f"Error: {str(e)}")
             self.debug_print(f"Ignoring intRawConfidenceScore value from all the sources for IoC domain: {artifact[0][1]}")
             # Ignore all the intRawConfidenceScore
             confidence_int = list()
@@ -2504,8 +2503,8 @@ class ChronicleConnector(BaseConnector):
                 result = self._parse_ioc_info(ioc, artifact)
             except Exception as e:
                 self.debug_print(f"Exception occurred while parsing IoCs response. Error: {str(e)}")
-                self.debug_print(f"Ignoring IoC match for artifactIndicator: \
-                                 '{artifact[0][0]}' and artifactValue: '{artifact[0][1]}'")
+                self.debug_print(f"Ignoring IoC match for artifactIndicator: "
+                                 f"'{artifact[0][0]}' and artifactValue: '{artifact[0][1]}'")
 
             # Add alerts into final results
             if result:
@@ -3071,8 +3070,8 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
-        self.debug_print(f"Ingesting {len(artifacts)} artifacts for {key} results \
-                         into the {'existing' if cid else 'new'} container")
+        self.debug_print(f"Ingesting {len(artifacts)} artifacts for {key} results "
+                         f"into the {'existing' if cid else 'new'} container")
         ret_val, message, cid = self._save_ingested(artifacts, key, cid=cid)
 
         if phantom.is_fail(ret_val):

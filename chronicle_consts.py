@@ -96,8 +96,8 @@ GC_CONFIG_ALERT_SEVERITY = "'Alert Severity to Ingest Alerts' asset configuratio
 GC_CONFIG_MAX_ARTIFACTS = "'Max allowed artifacts in a single container' asset configuration"
 GC_CONFIG_MAX_LIMIT_POLL_NOW = "'Max results for POLL NOW' asset configuration"
 GC_CONFIG_MAX_LIMIT_POLL = "'Max results for scheduled/interval POLL' asset configuration"
-GC_CONFIG_TIME_POLL_NOW = "'Time range for POLL NOW' or 'Start time for the \
-                           scheduled/interval POLL' asset configuration parameter"
+GC_CONFIG_TIME_POLL_NOW = "'Time range for POLL NOW' or 'Start time for the " \
+                           "scheduled/interval POLL' asset configuration parameter"
 GC_CONFIG_TIME_RANGE_POLL_NOW = "'Time range for POLL NOW' asset configuration parameter"
 
 GC_DEFAULT_WAIT_TIMEOUT_PERIOD = 3
@@ -117,8 +117,8 @@ GC_INVALID_ERR_RESPONSE_FORMAT = 'Invalid error response received from Chronicle
 GC_INVALID_INTEGER_ERR_MSG = "Please provide a valid integer value in the {parameter} parameter."
 GC_LIMIT_VALIDATION_ALLOW_ZERO_MSG = "Please provide zero or positive integer value in the {parameter} parameter."
 GC_LIMIT_VALIDATION_MSG = "Please provide a valid non-zero positive integer value in the {parameter} parameter."
-GC_TIME_RANGE_VALIDATION_MSG = "Please provide valid 'Time range' value in the action parameters. \
-                               Format: <digit><d/h/m/s> e.g. 3d (three days)"
+GC_TIME_RANGE_VALIDATION_MSG = "Please provide valid 'Time range' value in the action parameters. " \
+                               "Format: <digit><d/h/m/s> e.g. 3d (three days)"
 GC_UTC_SINCE_TIME_ERROR = "Please provide time in the span of UTC time since Unix epoch 1970-01-01T00:00:00Z."
 GC_INVALID_TIME_ERR = 'Invalid {0}, supports ISO date format only. e.g. 2019-10-17T00:00:00Z.'
 GC_GREATER_TIME_ERR = 'Invalid {0}, can not be greater than current UTC time.'
@@ -127,15 +127,15 @@ GC_INVALID_TIME_PERIOD = 'Invalid time period. End time must be later than Start
 GC_INVALID_LIST_JSON_ERR = "Please provide valid JSON formatted list in '{0}' parameter(s)."
 GC_INVALID_DICT_JSON_ERR = "Please provide valid JSON formatted dictionary in {0} parameter."
 GC_JSON_ERROR = "Unable to load the json for {0} parameter. {1}"
-GC_TIME_PARAM_ERROR = "Please provide proper time related parameters for the search. \
-                      You can provide time period either in the time range action parameter or \
-                      in the start time and end time action parameters according to available action parameters."
-GC_INT_RANGE_CONFIDENCE_ERROR = "Please provide exactly 2 positive integer values \
-                                as comma-separated string in '{0}' parameter(s)."
-GC_ON_POLL_INVALID_TIME_ERROR = "Please provide valid time related parameters ('Time range for POLL NOW' \
-                                or 'Start time for the scheduled/interval POLL') for the ingestion action."
-GC_STATE_FILE_CORRUPT_ERROR = "Error occurred while loading the state file due to its unexpected format. \
-                              Resetting the state file with the default format. Please try again."
+GC_TIME_PARAM_ERROR = "Please provide proper time related parameters for the search. " \
+                      "You can provide time period either in the time range action parameter or " \
+                      "in the start time and end time action parameters according to available action parameters."
+GC_INT_RANGE_CONFIDENCE_ERROR = "Please provide exactly 2 positive integer values " \
+                                "as comma-separated string in '{0}' parameter(s)."
+GC_ON_POLL_INVALID_TIME_ERROR = "Please provide valid time related parameters ('Time range for POLL NOW' " \
+                                "or 'Start time for the scheduled/interval POLL') for the ingestion action."
+GC_STATE_FILE_CORRUPT_ERROR = "Error occurred while loading the state file due to its unexpected format. " \
+                              "Resetting the state file with the default format. Please try again."
 GC_INVALID_RULE_IDS_MSG = "Provided Rule ID(s) are invalid. Please provide valid Rule ID(s)"
 GC_INVALID_REFERENCE_TIME_MSG = "Please provide valid reference time in the action parameter"
 GC_INVALID_INDICATOR_VALUE_MSG = "Received unexpected value for the 'asset indicator' action parameter"
