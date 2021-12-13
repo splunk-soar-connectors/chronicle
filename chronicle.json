@@ -23,6 +23,34 @@
     "pip_dependencies": {
         "wheel": [
             {
+                "module": "certifi",
+                "input_file": "wheels/certifi/certifi-2021.10.8-py2.py3-none-any.whl"
+            },
+            {
+                "module": "chardet",
+                "input_file": "wheels/chardet/chardet-3.0.4-py2.py3-none-any.whl"
+            },
+            {
+                "module": "idna",
+                "input_file": "wheels/idna/idna-2.10-py2.py3-none-any.whl"
+            },
+            {
+                "module": "urllib3",
+                "input_file": "wheels/urllib3/urllib3-1.26.7-py2.py3-none-any.whl"
+            },
+            {
+                "module": "requests",
+                "input_file": "wheels/requests/requests-2.25.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "soupsieve",
+                "input_file": "wheels/soupsieve/soupsieve-2.3.1-py3-none-any.whl"
+            },
+            {
+                "module": "beautifulsoup4",
+                "input_file": "wheels/beautifulsoup4/beautifulsoup4-4.9.1-py3-none-any.whl"
+            },
+            {
                 "module": "google-api-python-client",
                 "input_file": "wheels/google_api_python_client/google_api_python_client-1.9.3-py3-none-any.whl"
             },
