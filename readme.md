@@ -71,6 +71,14 @@ This app uses the uritemplate module, which is licensed under the OSI Approved, 
 Software License, BSD License (BSD 3-Clause License or Apache License, Version 2.0), Copyright (c)
 Ian Stapleton Cordasco.
 
+## Port Information
+The app uses HTTP/HTTPS protocol for communicating with the Chronicle Server. Below are the default ports used by Splunk SOAR.
+
+SERVICE NAME | TRANSPORT PROTOCOL | PORT
+------------ | ------------------ | ----
+**http** | tcp | 80
+**https** | tcp | 443
+
 ## Explanation of the Asset Configuration Parameters
 
 The asset configuration parameters affect \[test connectivity\] and all the other actions of the
