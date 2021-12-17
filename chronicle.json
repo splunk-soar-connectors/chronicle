@@ -9,13 +9,13 @@
     "product_name": "Chronicle",
     "python_version": "3",
     "product_version_regex": ".*",
-    "publisher": "Google",
-    "license": "Copyright (c) 2020-2021 Google LLC.",
-    "app_version": "2.1.1",
+    "publisher": "Splunk",
+    "license": "Copyright (c) 2020-2021 Splunk Inc.",
+    "app_version": "2.2.0",
     "utctime_updated": "2021-11-10T04:28:36.000000Z",
     "package_name": "phantom_chronicle",
     "main_module": "chronicle_connector.py",
-    "min_phantom_version": "4.9.39220",
+    "min_phantom_version": "5.0.0",
     "latest_tested_versions": [
         "v1.7.1"
     ],
@@ -23,7 +23,35 @@
     "pip_dependencies": {
         "wheel": [
             {
-                "module": "google_api_python_client",
+                "module": "certifi",
+                "input_file": "wheels/certifi/certifi-2021.10.8-py2.py3-none-any.whl"
+            },
+            {
+                "module": "chardet",
+                "input_file": "wheels/chardet/chardet-3.0.4-py2.py3-none-any.whl"
+            },
+            {
+                "module": "idna",
+                "input_file": "wheels/idna/idna-2.10-py2.py3-none-any.whl"
+            },
+            {
+                "module": "urllib3",
+                "input_file": "wheels/urllib3/urllib3-1.26.7-py2.py3-none-any.whl"
+            },
+            {
+                "module": "requests",
+                "input_file": "wheels/requests/requests-2.25.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "soupsieve",
+                "input_file": "wheels/soupsieve/soupsieve-2.3.1-py3-none-any.whl"
+            },
+            {
+                "module": "beautifulsoup4",
+                "input_file": "wheels/beautifulsoup4/beautifulsoup4-4.9.1-py3-none-any.whl"
+            },
+            {
+                "module": "google-api-python-client",
                 "input_file": "wheels/google_api_python_client/google_api_python_client-1.9.3-py3-none-any.whl"
             },
             {
@@ -31,11 +59,11 @@
                 "input_file": "wheels/cachetools/cachetools-4.1.1-py3-none-any.whl"
             },
             {
-                "module": "pyasn",
+                "module": "pyasn1",
                 "input_file": "wheels/pyasn/pyasn1-0.4.6-py2.py3-none-any.whl"
             },
             {
-                "module": "pyasn_modules",
+                "module": "pyasn1-modules",
                 "input_file": "wheels/pyasn_modules/pyasn1_modules-0.2.8-py2.py3-none-any.whl"
             },
             {
@@ -43,7 +71,7 @@
                 "input_file": "wheels/rsa_wheel/rsa-4.6-py3-none-any.whl"
             },
             {
-                "module": "google_auth",
+                "module": "google-auth",
                 "input_file": "wheels/google_auth/google_auth-1.18.0-py2.py3-none-any.whl"
             },
             {
@@ -55,7 +83,7 @@
                 "input_file": "wheels/httplib2_wheel/httplib2-0.18.1-py3-none-any.whl"
             },
             {
-                "module": "oauthclient",
+                "module": "oauth2client",
                 "input_file": "wheels/oauthclient/oauth2client-4.1.3-py2.py3-none-any.whl"
             },
             {
@@ -1029,6 +1057,13 @@
                     ]
                 },
                 {
+                    "data_path": "action_result.data.*.events.*.metadata.ingestedTimestamp",
+                    "data_type": "string",
+                    "example_values": [
+                        "2021-11-02T08:47:42.040912Z"
+                    ]
+                },
+                {
                     "data_path": "action_result.data.*.events.*.metadata.collectedTimestamp",
                     "data_type": "string",
                     "example_values": [
@@ -1753,14 +1788,14 @@
                     "data_path": "action_result.data.*.alerts.*.alertInfos.*.udmEvent.metadata.productName",
                     "data_type": "string",
                     "example_values": [
-                        "Zscaler NSS"
+                        "Example product"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.alerts.*.alertInfos.*.udmEvent.metadata.vendorName",
                     "data_type": "string",
                     "example_values": [
-                        "Zscaler"
+                        "Example vendor"
                     ]
                 },
                 {
@@ -2023,7 +2058,7 @@
                     "data_path": "action_result.data.*.userAlerts.*.alertInfos.*.sourceProduct",
                     "data_type": "string",
                     "example_values": [
-                        "Office 365"
+                        "Example product"
                     ]
                 },
                 {
@@ -2065,14 +2100,14 @@
                     "data_path": "action_result.data.*.userAlerts.*.alertInfos.*.udmEvent.metadata.productName",
                     "data_type": "string",
                     "example_values": [
-                        "Office 365"
+                        "Example product"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.userAlerts.*.alertInfos.*.udmEvent.metadata.vendorName",
                     "data_type": "string",
                     "example_values": [
-                        "Microsoft"
+                        "Example vendor"
                     ]
                 },
                 {
@@ -2121,7 +2156,7 @@
                     "data_path": "action_result.data.*.userAlerts.*.alertInfos.*.udmEvent.target.application",
                     "data_type": "string",
                     "example_values": [
-                        "Exchange"
+                        "Example application"
                     ]
                 },
                 {
@@ -2846,6 +2881,81 @@
                     "example_values": [
                         "ru_746bd6d6-6b84-4007-b74c-ec90c7306a71"
                     ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.detection.*.ruleLabels.*.key",
+                    "data_type": "string",
+                    "example_values": [
+                        "author"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.detection.*.ruleLabels.*.value",
+                    "data_type": "string",
+                    "example_values": [
+                        "rule1"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.target.hostname",
+                    "data_type": "string",
+                    "example_values": [
+                        "dhcp_server"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.network.dhcp.type",
+                    "data_type": "string",
+                    "example_values": [
+                        "ACK"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.network.dhcp.chaddr",
+                    "data_type": "string",
+                    "example_values": [
+                        "0d:60:ff:08:2c:ea"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.network.dhcp.giaddr",
+                    "data_type": "string",
+                    "example_values": [
+                        "10.0.5.64"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.network.dhcp.opcode",
+                    "data_type": "string",
+                    "example_values": [
+                        "BOOTREPLY"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.network.dhcp.yiaddr",
+                    "data_type": "string",
+                    "example_values": [
+                        "10.0.5.64"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.network.dhcp.clientHostname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.network.dhcp.clientIdentifier",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.network.dhcp.leaseTimeSeconds",
+                    "data_type": "numeric",
+                    "example_values": [
+                        14410
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.detections.*.collectionElements.*.references.*.event.principal.asset.hostname",
+                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.summary.total_detections",

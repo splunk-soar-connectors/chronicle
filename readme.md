@@ -1,6 +1,6 @@
 [comment]: # " File: readme.md"
 [comment]: # ""
-[comment]: # "    Copyright (c) 2020-2021 Google LLC."
+[comment]: # "    Copyright (c) 2020-2021 Splunk Inc., Google LLC."
 [comment]: # "    "
 [comment]: # "    Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "    you may not use this file except in compliance with the License."
@@ -41,36 +41,43 @@ This app uses the google-auth-httplib2 module, which is licensed under the Apach
 This app uses the google-auth-oauthlib module, which is licensed under the Apache Software License
 (Apache 2.0), Copyright (c) Google Cloud Platform.
 
-### httplib2-wheel
+### httplib2
 
-This app uses the httplib2-wheel module, which is licensed under the MIT License (MIT), Copyright
+This app uses the httplib2 module, which is licensed under the MIT License (MIT), Copyright
 (c) Joe Gregorio.
 
-### oauthclient
+### oauth2client
 
-This app uses the oauthclient module, which is licensed under the Apache Software License (Apache
+This app uses the oauth2client module, which is licensed under the Apache Software License (Apache
 2.0), Copyright (c) Google Inc.
 
-### pyasn
+### pyasn1
 
-This app uses the pyasn module, which is licensed under the MIT License (MIT), Copyright (c) Hadi
-Asghari.
+This app uses the pyasn1 module, which is licensed under the MIT License (MIT), Copyright (c) Ilya Etingof.
 
-### pyasn-modules
+### pyasn1-modules
 
-This app uses the pyasn-modules module, which is licensed under the BSD License (BSD-2-Clause),
+This app uses the pyasn1-modules module, which is licensed under the BSD License (BSD-2-Clause),
 Copyright (c) Ilya Etingof.
 
-### rsa-wheel
+### rsa
 
-This app uses the rsa-wheel module, which is licensed under the Apache Software License (ASL 2),
+This app uses the rsa module, which is licensed under the Apache Software License (ASL 2),
 Copyright (c) Sybren A. Stuvel.
 
-### uritemplate-wheel
+### uritemplate
 
-This app uses the uritemplate-wheel module, which is licensed under the OSI Approved, Apache
+This app uses the uritemplate module, which is licensed under the OSI Approved, Apache
 Software License, BSD License (BSD 3-Clause License or Apache License, Version 2.0), Copyright (c)
 Ian Stapleton Cordasco.
+
+## Port Information
+The app uses HTTP/HTTPS protocol for communicating with the Chronicle Server. Below are the default ports used by Splunk SOAR.
+
+SERVICE NAME | TRANSPORT PROTOCOL | PORT
+------------ | ------------------ | ----
+**http** | tcp | 80
+**https** | tcp | 443
 
 ## Explanation of the Asset Configuration Parameters
 
@@ -737,20 +744,20 @@ configuration parameter.
             datapath. The partially fetched detections will be displayed in the action output.
 
     -   **Example:**
-        -   Get a list of 200 detections of ALERTIING type for the ruleId,
+        -   Get a list of 200 detections of ALERTING type for the ruleId,
             ru_1f54ab4b-e523-48f7-ae25-271b5ea8337d, discovered within the enterprise for the last
             three days.
             -   Rule IDs= ru_1f54ab4b-e523-48f7-ae25-271b5ea8337d
             -   Alert State= ALERTING
             -   Time Range= 3d
             -   Limit= 200
-        -   Get a list of 100 detections of NOT_ALERTIING type for the ruleIds,
+        -   Get a list of 100 detections of NOT_ALERTING type for the ruleIds,
             ru_1f54ab4b-e523-48f7-ae25-271b5ea8337d and
             ru_1f54ab4b-e523-48f7-ae25-271b5ea8337d@v_1605892822_687503000, discovered within a
             specified Start Time and End Time.
             -   Rule IDs= ru_1f54ab4b-e523-48f7-ae25-271b5ea8337d,
                 ru_1f54ab4b-e523-48f7-ae25-271b5ea8337d@v_1605892822_687503000
-            -   Alert State= NOT_ALERTIING
+            -   Alert State= NOT_ALERTING
             -   Start Time= 2019-11-01T20:37:00Z
             -   End Time= 2021-02-01T20:37:00Z
             -   Limit= 100
