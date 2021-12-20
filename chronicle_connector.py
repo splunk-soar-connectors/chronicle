@@ -86,6 +86,7 @@ class ChronicleConnector(BaseConnector):
         self._last_run_hash_digests = dict()
         # Ingestion time dictionary initialization
         self._time_dict = dict()
+        self._verify = False
 
     def _process_empty_response(self, response, action_result):
         """Process empty response.
@@ -2776,8 +2777,7 @@ class ChronicleConnector(BaseConnector):
         url = f'{self.get_phantom_base_url()}rest/container?_filter_name__contains="{name}"&sort=start_time&order=desc'
 
         try:
-            r = requests.get(url,  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
-                             verify=False)  # nosemgrep: python.requests.security.disabled-cert-validation.disabled-cert-validation
+            r = requests.get(url, verify=self._verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
         except Exception as e:
             self.debug_print("Error making local rest call: {0}".format(str(e)))
             self.debug_print('DB QUERY: {}'.format(url))
