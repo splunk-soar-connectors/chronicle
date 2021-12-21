@@ -38,7 +38,7 @@ License: Apache 2.0
 Google Inc
 
 Library: httplib2
-Version: 0.18.1
+Version: 0.19.0
 License: MIT
 Copyright 2006 by Joe Gregorio
 
@@ -63,7 +63,7 @@ License: Apache 2.0
 Kenneth Reitz
 
 Library: rsa
-Version: 4.6
+Version: 4.7
 License: Apache 2.0
 Copyright 2011 Sybren A
 
