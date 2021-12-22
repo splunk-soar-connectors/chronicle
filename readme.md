@@ -1,18 +1,31 @@
+[comment]: # "Auto-generated SOAR connector documentation"
+# Chronicle
+
+Publisher: Splunk  
+Connector Version: 2\.2\.3  
+Product Vendor: Google Cloud  
+Product Name: Chronicle  
+Product Version Supported (regex): "\.\*"  
+Minimum Product Version: 5\.0\.0  
+
+This app enables the end\-user to search, analyze, and ingest the enterprise security data stored in the Chronicle using investigative, reputation, and ingestion actions
+
 [comment]: # " File: readme.md"
 [comment]: # ""
 [comment]: # "    Copyright (c) 2020-2021 Splunk Inc., Google LLC."
-[comment]: # "    "
+[comment]: # ""
 [comment]: # "    Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "    you may not use this file except in compliance with the License."
 [comment]: # "    You may obtain a copy of the License at"
-[comment]: # "    "
+[comment]: # ""
 [comment]: # "        http://www.apache.org/licenses/LICENSE-2.0"
-[comment]: # "    "
+[comment]: # ""
 [comment]: # "    Unless required by applicable law or agreed to in writing, software"
 [comment]: # "    distributed under the License is distributed on an 'AS IS' BASIS,"
 [comment]: # "    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied."
 [comment]: # "    See the License for the specific language governing permissions and"
 [comment]: # "    limitations under the License."
+[comment]: # ""
 [comment]: # ""
 ## SDK and SDK Licensing details for the app
 
@@ -43,8 +56,8 @@ This app uses the google-auth-oauthlib module, which is licensed under the Apach
 
 ### httplib2
 
-This app uses the httplib2 module, which is licensed under the MIT License (MIT), Copyright
-(c) Joe Gregorio.
+This app uses the httplib2 module, which is licensed under the MIT License (MIT), Copyright (c) Joe
+Gregorio.
 
 ### oauth2client
 
@@ -53,7 +66,8 @@ This app uses the oauth2client module, which is licensed under the Apache Softwa
 
 ### pyasn1
 
-This app uses the pyasn1 module, which is licensed under the MIT License (MIT), Copyright (c) Ilya Etingof.
+This app uses the pyasn1 module, which is licensed under the MIT License (MIT), Copyright (c) Ilya
+Etingof.
 
 ### pyasn1-modules
 
@@ -62,22 +76,24 @@ Copyright (c) Ilya Etingof.
 
 ### rsa
 
-This app uses the rsa module, which is licensed under the Apache Software License (ASL 2),
-Copyright (c) Sybren A. Stuvel.
+This app uses the rsa module, which is licensed under the Apache Software License (ASL 2), Copyright
+(c) Sybren A. Stuvel.
 
 ### uritemplate
 
-This app uses the uritemplate module, which is licensed under the OSI Approved, Apache
-Software License, BSD License (BSD 3-Clause License or Apache License, Version 2.0), Copyright (c)
-Ian Stapleton Cordasco.
+This app uses the uritemplate module, which is licensed under the OSI Approved, Apache Software
+License, BSD License (BSD 3-Clause License or Apache License, Version 2.0), Copyright (c) Ian
+Stapleton Cordasco.
 
 ## Port Information
-The app uses HTTP/HTTPS protocol for communicating with the Chronicle Server. Below are the default ports used by Splunk SOAR.
 
-SERVICE NAME | TRANSPORT PROTOCOL | PORT
------------- | ------------------ | ----
-**http** | tcp | 80
-**https** | tcp | 443
+The app uses HTTP/HTTPS protocol for communicating with the Chronicle Server. Below are the default
+ports used by Splunk SOAR.
+
+| Service Name | Transport Protocol | Port |
+|--------------|--------------------|------|
+| http         | tcp                | 80   |
+| https        | tcp                | 443  |
 
 ## Explanation of the Asset Configuration Parameters
 
@@ -1620,3 +1636,535 @@ configuration parameter.
     -   **<u>Action</u> - List Events**
         -   When the asset IP address is not valid but it has a valid IP format.
         -   When an incorrect product ID is given for the asset.
+
+
+### Configuration Variables
+The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a Chronicle asset in SOAR.
+
+VARIABLE | REQUIRED | TYPE | DESCRIPTION
+-------- | -------- | ---- | -----------
+**base\_url** |  required  | string | A Base URL
+**scopes** |  required  | string | Chronicle API Scope \(JSON formatted list\)
+**key\_json** |  required  | password | Contents Of Service Account JSON File
+**wait\_timeout\_period** |  optional  | numeric | Retry Wait Period \(in seconds\)
+**no\_of\_retries** |  optional  | numeric | Number Of Retries
+**malicious\_category** |  optional  | string | Malicious Categories for Reputation \(JSON formatted list\)
+**malicious\_severity** |  optional  | string | Malicious Severity for Reputation \(JSON formatted list\)
+**malicious\_str\_confidence\_score** |  optional  | string | Malicious Str Confidence Score for Reputation \(JSON formatted list\)
+**malicious\_int\_confidence\_score** |  optional  | string | Malicious Int Score Range for Reputation \(Use this format 'min\_score,max\_score'\)
+**suspicious\_category** |  optional  | string | Suspicious Categories for Reputation \(JSON formatted list\)
+**suspicious\_severity** |  optional  | string | Suspicious Severity for Reputation \(JSON formatted list\)
+**suspicious\_str\_confidence\_score** |  optional  | string | Suspicious Str Confidence Score for Reputation \(JSON formatted list\)
+**suspicious\_int\_confidence\_score** |  optional  | string | Suspicious Int Confidence Score Range for Reputation \(Use this format 'min\_score,max\_score'\)
+**run\_mode** |  optional  | string | Ingestion Run Mode for ON POLL
+**backdate\_time** |  optional  | string | Backdate Start Time in minutes \(for scheduled polling\)
+**rule\_ids** |  optional  | string | Comma\-separated Rule ID\(s\) \(with or without versionId\) for fetching the detections
+**fetch\_live\_rules** |  optional  | boolean | Fetch all live rules created in the Detection Engine
+**run\_automation** |  optional  | boolean | Flag to Trigger Active Playbooks upon Completion of the Ingestion Action
+**alerts\_severity** |  optional  | string | Alert Severity to Ingest Alerts \(JSON formatted list\) \(If not given ingest all the alerts\)
+**start\_time\_scheduled\_poll** |  optional  | string | Start Time for Scheduled/Interval POLL \(Use this format\: '<digit><d/h/m/s>' or 'start\_time'\)
+**time\_range\_poll\_now** |  optional  | string | Time Range for POLL NOW \(Use this format\: 'start\_time, end\_time' or '<digit><d/h/m/s>' or 'start\_time'\)
+**max\_results\_scheduled\_poll** |  optional  | numeric | Max Results for Scheduled/Interval POLL \(Page Size\)
+**max\_results\_poll\_now** |  optional  | numeric | Max Results for POLL NOW \(Page Size\)
+**max\_artifacts** |  optional  | numeric | Max Allowed Artifacts in a Single Container
+
+### Supported Actions  
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration  
+[list ioc details](#action-list-ioc-details) - Return any threat intelligence associated with the specified artifact  
+[list iocs](#action-list-iocs) - List all of the IoCs discovered within the enterprise within the specified time  
+[list assets](#action-list-assets) - List all of the assets that accessed the specified artifact within the specified time  
+[list events](#action-list-events) - List all of the events discovered within the enterprise on a particular device within the specified time  
+[domain reputation](#action-domain-reputation) - Derive the reputation of the specified domain artifact \(The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown'\)  
+[ip reputation](#action-ip-reputation) - Derive the reputation of the specified destination IP address artifact \(The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown'\)  
+[list alerts](#action-list-alerts) - List all of the security alerts tracked within the enterprise on particular assets and\|or users for the specified time  
+[list rules](#action-list-rules) - List the latest versions of the rules created in the Detection Engine within the enterprise  
+[list detections](#action-list-detections) - List all the detections for the specific versions of the given Rule ID\(s\)  
+[on poll](#action-on-poll) - Action handler for the on poll ingest functionality  
+
+## action: 'test connectivity'
+Validate the asset configuration for connectivity using supplied configuration
+
+Type: **test**  
+Read only: **True**
+
+#### Action Parameters
+No parameters are required for this action
+
+#### Action Output
+No Output  
+
+## action: 'list ioc details'
+Return any threat intelligence associated with the specified artifact
+
+Type: **investigate**  
+Read only: **True**
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**artifact\_indicator** |  required  | Specify the artifact indicator | string | 
+**value** |  required  | Specify the artifact indicator value | string |  `ip`  `domain` 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.artifact\_indicator | string | 
+action\_result\.parameter\.value | string |  `ip`  `domain` 
+action\_result\.data\.\*\.sources\.\*\.addresses\.\*\.domain | string |  `domain` 
+action\_result\.data\.\*\.sources\.\*\.addresses\.\*\.ipAddress | string |  `ip` 
+action\_result\.data\.\*\.sources\.\*\.addresses\.\*\.port | numeric | 
+action\_result\.data\.\*\.sources\.\*\.category | string | 
+action\_result\.data\.\*\.sources\.\*\.confidenceScore\.strRawConfidenceScore | string | 
+action\_result\.data\.\*\.sources\.\*\.firstActiveTime | string | 
+action\_result\.data\.\*\.sources\.\*\.lastActiveTime | string | 
+action\_result\.data\.\*\.sources\.\*\.rawSeverity | string | 
+action\_result\.data\.\*\.sources\.\*\.sourceUrl | string |  `url` 
+action\_result\.data\.\*\.uri | string |  `url` 
+action\_result\.summary\.total\_sources | numeric | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'list iocs'
+List all of the IoCs discovered within the enterprise within the specified time
+
+Type: **investigate**  
+Read only: **True**
+
+The action will fetch the list of all of the IoCs discovered within the enterprise within the specified time\. If the user receives 'moreDataAvailable' as a true value in the action output datapaths, there might still be more IoCs within the user's Chronicle account\. The user can narrow the time range and run the action again to ensure visibility into all possible IoCs\. If the user doesn't provide any of the time\-related action parameters, the action will perform a search for the last three days\. If the user provides \[Time Range\] and other time\-related action parameters, the priority will be given to the \[Time Range\] action parameter and the search will be performed according to its given value\.
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**time\_range** |  optional  | Specify the time range of the search \(Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds\) | string |  `gc time range` 
+**start\_time** |  optional  | Specify the start time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**limit** |  optional  | Specify the maximum number of IoCs results to return\. You can specify between 1 and 10,000\. \(Default is 10,000\) | numeric | 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.limit | numeric | 
+action\_result\.parameter\.start\_time | string |  `gc time` 
+action\_result\.parameter\.time\_range | string |  `gc time range` 
+action\_result\.data\.\*\.done | boolean | 
+action\_result\.data\.\*\.response\.\@type | string | 
+action\_result\.data\.\*\.response\.matches\.\*\.artifact\.domainName | string |  `domain` 
+action\_result\.data\.\*\.response\.matches\.\*\.firstSeenTime | string |  `gc time` 
+action\_result\.data\.\*\.response\.matches\.\*\.iocIngestTime | string |  `gc time` 
+action\_result\.data\.\*\.response\.matches\.\*\.lastSeenTime | string |  `gc time` 
+action\_result\.data\.\*\.response\.matches\.\*\.sources\.\*\.category | string | 
+action\_result\.data\.\*\.response\.matches\.\*\.sources\.\*\.confidenceScore\.intRawConfidenceScore | numeric | 
+action\_result\.data\.\*\.response\.matches\.\*\.sources\.\*\.confidenceScore\.normalizedConfidenceScore | string | 
+action\_result\.data\.\*\.response\.matches\.\*\.sources\.\*\.rawSeverity | string | 
+action\_result\.data\.\*\.response\.matches\.\*\.sources\.\*\.source | string | 
+action\_result\.data\.\*\.response\.matches\.\*\.uri | string |  `url` 
+action\_result\.data\.\*\.response\.moreDataAvailable | boolean | 
+action\_result\.summary\.total\_iocs | numeric | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'list assets'
+List all of the assets that accessed the specified artifact within the specified time
+
+Type: **investigate**  
+Read only: **True**
+
+If the user doesn't provide any of the time\-related action parameters, the action will perform a search for the last three days\. If the user provides \[Time Range\] and other time\-related action parameters, the priority will be given to the \[Time Range\] action parameter and the search will be performed according to its given value\.
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**artifact\_indicator** |  required  | Specify the artifact indicator | string | 
+**value** |  required  | Specify the artifact indicator value | string |  `ip`  `domain`  `md5`  `sha1`  `sha256` 
+**time\_range** |  optional  | Specify the time range of the search \(Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds\) | string |  `gc time range` 
+**start\_time** |  optional  | Specify the start time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**end\_time** |  optional  | Specify the end time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**limit** |  optional  | Specify the maximum number of assets to return\. You can specify between 1 and 10,000\. \(Default is 10,000\) | numeric | 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.artifact\_indicator | string | 
+action\_result\.parameter\.end\_time | string |  `gc time` 
+action\_result\.parameter\.limit | numeric | 
+action\_result\.parameter\.start\_time | string |  `gc time` 
+action\_result\.parameter\.time\_range | string |  `gc time range` 
+action\_result\.parameter\.value | string |  `ip`  `domain`  `md5`  `sha1`  `sha256` 
+action\_result\.data\.\*\.assets\.\*\.asset\.assetIpAddress | string |  `ip` 
+action\_result\.data\.\*\.assets\.\*\.asset\.hostname | string |  `host name` 
+action\_result\.data\.\*\.assets\.\*\.firstSeenArtifactInfo\.artifactIndicator\.domainName | string |  `domain` 
+action\_result\.data\.\*\.assets\.\*\.firstSeenArtifactInfo\.seenTime | string |  `gc time` 
+action\_result\.data\.\*\.assets\.\*\.lastSeenArtifactInfo\.artifactIndicator\.domainName | string |  `domain` 
+action\_result\.data\.\*\.assets\.\*\.lastSeenArtifactInfo\.seenTime | string |  `gc time` 
+action\_result\.data\.\*\.uri | string |  `url` 
+action\_result\.summary\.total\_assets | numeric | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'list events'
+List all of the events discovered within the enterprise on a particular device within the specified time
+
+Type: **investigate**  
+Read only: **True**
+
+If the user doesn't provide any of the time\-related action parameters, the action will perform a search for the last three days\. If the \[Reference Time\] action parameter is not given, the action will consider start time as reference time\. And if the value is given for it, the value will be validated and used in the search request\. If the user provides \[Time Range\] and other time\-related action parameters, the priority will be given to the \[Time Range\] action parameter and the search will be performed according to its given value\.
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**asset\_indicator** |  required  | Specify the asset indicator | string | 
+**value** |  required  | Specify the asset indicator value | string |  `gc mac`  `gc product id`  `host name`  `ip` 
+**time\_range** |  optional  | Specify the time range of the search \(Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds\) | string |  `gc time range` 
+**start\_time** |  optional  | Specify the start time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**end\_time** |  optional  | Specify the end time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**reference\_time** |  optional  | Specify the time for the asset you are investigating \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**limit** |  optional  | Specify the maximum number of events results to return \(Default is 10,000\) | numeric | 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.asset\_indicator | string | 
+action\_result\.parameter\.end\_time | string |  `gc time` 
+action\_result\.parameter\.limit | numeric | 
+action\_result\.parameter\.reference\_time | string |  `gc time` 
+action\_result\.parameter\.start\_time | string |  `gc time` 
+action\_result\.parameter\.time\_range | string |  `gc time range` 
+action\_result\.parameter\.value | string |  `gc mac`  `gc product id`  `host name`  `ip` 
+action\_result\.data\.\*\.events\.\*\.metadata\.ingestedTimestamp | string | 
+action\_result\.data\.\*\.events\.\*\.metadata\.collectedTimestamp | string |  `gc time` 
+action\_result\.data\.\*\.events\.\*\.metadata\.eventTimestamp | string |  `gc time` 
+action\_result\.data\.\*\.events\.\*\.metadata\.eventType | string | 
+action\_result\.data\.\*\.events\.\*\.metadata\.productName | string | 
+action\_result\.data\.\*\.events\.\*\.network\.applicationProtocol | string | 
+action\_result\.data\.\*\.events\.\*\.network\.dns\.answers\.\*\.data | string |  `ip` 
+action\_result\.data\.\*\.events\.\*\.network\.dns\.answers\.\*\.name | string | 
+action\_result\.data\.\*\.events\.\*\.network\.dns\.answers\.\*\.ttl | numeric | 
+action\_result\.data\.\*\.events\.\*\.network\.dns\.answers\.\*\.type | numeric | 
+action\_result\.data\.\*\.events\.\*\.network\.dns\.questions\.\*\.name | string | 
+action\_result\.data\.\*\.events\.\*\.network\.dns\.questions\.\*\.type | numeric | 
+action\_result\.data\.\*\.events\.\*\.network\.dns\.response | boolean | 
+action\_result\.data\.\*\.events\.\*\.network\.http\.responseCode | numeric | 
+action\_result\.data\.\*\.events\.\*\.principal\.hostname | string |  `host name` 
+action\_result\.data\.\*\.events\.\*\.principal\.ip | string |  `ip` 
+action\_result\.data\.\*\.events\.\*\.principal\.mac | string |  `gc mac` 
+action\_result\.data\.\*\.events\.\*\.target\.ip | string |  `ip` 
+action\_result\.data\.\*\.eventsSummary\.\*\.count | numeric | 
+action\_result\.data\.\*\.eventsSummary\.\*\.eventType | string | 
+action\_result\.data\.\*\.uri | string | 
+action\_result\.summary\.total\_events | numeric | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'domain reputation'
+Derive the reputation of the specified domain artifact \(The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown'\)
+
+Type: **investigate**  
+Read only: **True**
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**domain\_name** |  required  | Specify a domain name | string |  `domain` 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.domain\_name | string |  `domain` 
+action\_result\.data\.\*\.reputation | string | 
+action\_result\.data\.\*\.sources\.\*\.addresses\.\*\.domain | string |  `domain` 
+action\_result\.data\.\*\.sources\.\*\.addresses\.\*\.port | numeric | 
+action\_result\.data\.\*\.sources\.\*\.category | string | 
+action\_result\.data\.\*\.sources\.\*\.confidenceScore\.strRawConfidenceScore | string | 
+action\_result\.data\.\*\.sources\.\*\.firstActiveTime | string |  `gc time` 
+action\_result\.data\.\*\.sources\.\*\.lastActiveTime | string |  `gc time` 
+action\_result\.data\.\*\.sources\.\*\.rawSeverity | string | 
+action\_result\.data\.\*\.sources\.\*\.sourceUrl | string |  `url` 
+action\_result\.data\.\*\.uri | string |  `url` 
+action\_result\.summary\.reputation | string | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'ip reputation'
+Derive the reputation of the specified destination IP address artifact \(The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown'\)
+
+Type: **investigate**  
+Read only: **True**
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**destination\_ip\_address** |  required  | Specify a destination IP address | string |  `ip` 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.destination\_ip\_address | string |  `ip` 
+action\_result\.data\.\*\.reputation | string | 
+action\_result\.data\.\*\.sources\.\*\.addresses\.\*\.domain | string |  `domain` 
+action\_result\.data\.\*\.sources\.\*\.addresses\.\*\.ipAddress | string |  `ip` 
+action\_result\.data\.\*\.sources\.\*\.addresses\.\*\.port | numeric | 
+action\_result\.data\.\*\.sources\.\*\.category | string | 
+action\_result\.data\.\*\.sources\.\*\.confidenceScore\.strRawConfidenceScore | string | 
+action\_result\.data\.\*\.sources\.\*\.firstActiveTime | string |  `gc time` 
+action\_result\.data\.\*\.sources\.\*\.lastActiveTime | string |  `gc time` 
+action\_result\.data\.\*\.sources\.\*\.rawSeverity | string | 
+action\_result\.data\.\*\.sources\.\*\.sourceUrl | string |  `url` 
+action\_result\.data\.\*\.uri | string |  `url` 
+action\_result\.summary\.reputation | string | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'list alerts'
+List all of the security alerts tracked within the enterprise on particular assets and\|or users for the specified time
+
+Type: **investigate**  
+Read only: **True**
+
+The user can specify the \[Alert Type\] to fetch\. If the user doesn't provide any of the time\-related action parameters, the action will perform a search for the last three days\. If the user provides \[Time Range\] and other time\-related action parameters, the priority will be given to the \[Time Range\] action parameter and the search will be performed according to its given value\.
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**time\_range** |  optional  | Specify the time range of the search \(Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds\) | string |  `gc time range` 
+**start\_time** |  optional  | Specify the start time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**end\_time** |  optional  | Specify the end time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**limit** |  optional  | Specify the maximum number of results to return\. You can specify between 1 and 100,000\. \(Default is 10,000\) | numeric | 
+**alert\_type** |  optional  | Specify the type of alerts to fetch | string | 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.alert\_type | string | 
+action\_result\.parameter\.end\_time | string |  `gc time` 
+action\_result\.parameter\.limit | numeric | 
+action\_result\.parameter\.start\_time | string |  `gc time` 
+action\_result\.parameter\.time\_range | string |  `gc time range` 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.name | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.rawLog | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.severity | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.sourceProduct | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.timestamp | string |  `gc time` 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.about\.\*\.hostname | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.collectedTimestamp | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.eventTimestamp | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.eventType | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.ingestedTimestamp | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.productEventType | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.productLogId | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.productName | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.vendorName | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.network\.applicationProtocol | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.network\.http\.method | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.network\.http\.referralUrl | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.network\.http\.responseCode | numeric | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.network\.http\.userAgent | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.network\.ipProtocol | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.network\.receivedBytes | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.network\.sentBytes | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.principal\.port | numeric | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.principal\.user\.userid | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.description | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.ruleName | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.severity | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.severityDetails | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.summary | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.target\.hostname | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.target\.port | numeric | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.udmEvent\.target\.url | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertInfos\.\*\.uri | string |  `url` 
+action\_result\.data\.\*\.alerts\.\*\.alertSummary\.\*\.count | numeric | 
+action\_result\.data\.\*\.alerts\.\*\.alertSummary\.\*\.name | string | 
+action\_result\.data\.\*\.alerts\.\*\.alertSummary\.\*\.occurrences | string | 
+action\_result\.data\.\*\.alerts\.\*\.asset\.assetIpAddress | string |  `ip` 
+action\_result\.data\.\*\.alerts\.\*\.asset\.hostname | string |  `host name` 
+action\_result\.data\.\*\.alerts\_assets\_association\.\*\.affected\_assets\.assetIpAddress | string |  `ip` 
+action\_result\.data\.\*\.alerts\_assets\_association\.\*\.affected\_assets\.hostname | string | 
+action\_result\.data\.\*\.alerts\_assets\_association\.\*\.alert\_name | string | 
+action\_result\.data\.\*\.alerts\_assets\_association\.\*\.asset\_count | numeric | 
+action\_result\.data\.\*\.alerts\_users\_association\.\*\.affected\_users\.email | string |  `email` 
+action\_result\.data\.\*\.alerts\_users\_association\.\*\.affected\_users\.username | string |  `gc username` 
+action\_result\.data\.\*\.alerts\_users\_association\.\*\.alert\_name | string | 
+action\_result\.data\.\*\.alerts\_users\_association\.\*\.user\_count | numeric | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.name | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.rawLog | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.sourceProduct | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.timestamp | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.eventTimestamp | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.eventType | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.ingestedTimestamp | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.productEventType | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.productName | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.metadata\.vendorName | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.network\.email\.from | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.principal\.user\.userid | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.confidence | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.confidenceDetails | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.severity | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.securityResult\.\*\.summary | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.alertInfos\.\*\.udmEvent\.target\.application | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.user\.email | string |  `email` 
+action\_result\.data\.\*\.userAlerts\.\*\.user\.email | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.user\.username | string |  `gc username` 
+action\_result\.data\.\*\.userAlerts\.\*\.userAlertSummary\.\*\.count | numeric | 
+action\_result\.data\.\*\.userAlerts\.\*\.userAlertSummary\.\*\.name | string | 
+action\_result\.data\.\*\.userAlerts\.\*\.userAlertSummary\.\*\.occurrences | string | 
+action\_result\.summary\.total\_alerts | numeric | 
+action\_result\.summary\.total\_asset\_alerts | numeric | 
+action\_result\.summary\.total\_assets\_with\_alerts | numeric | 
+action\_result\.summary\.total\_user\_alerts | numeric | 
+action\_result\.summary\.total\_users\_with\_alerts | numeric | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'list rules'
+List the latest versions of the rules created in the Detection Engine within the enterprise
+
+Type: **investigate**  
+Read only: **True**
+
+If the user doesn't provide any value in the \[Limit\] action parameter, then the action will fetch 1000 rules \(or less, if there are lesser rules created in the Detection Engine within the enterprise\)\.
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**limit** |  optional  | Specify the number of rules to return \(Default is 1000\) | numeric | 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.limit | numeric | 
+action\_result\.data\.\*\.rules\.\*\.alertingEnabled | boolean | 
+action\_result\.data\.\*\.rules\.\*\.compilationError | string | 
+action\_result\.data\.\*\.rules\.\*\.compilationState | string | 
+action\_result\.data\.\*\.rules\.\*\.liveRuleEnabled | boolean | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.author | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.category | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.created | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.description | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.logsource | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.product | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.reference | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.severity | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.technique | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.updated | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.version | string | 
+action\_result\.data\.\*\.rules\.\*\.metadata\.yara\_version | string | 
+action\_result\.data\.\*\.rules\.\*\.ruleId | string |  `gc rule id` 
+action\_result\.data\.\*\.rules\.\*\.ruleName | string | 
+action\_result\.data\.\*\.rules\.\*\.ruleText | string | 
+action\_result\.data\.\*\.rules\.\*\.versionCreateTime | string | 
+action\_result\.data\.\*\.rules\.\*\.versionId | string |  `gc rule id` 
+action\_result\.summary\.total\_rules | numeric | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'list detections'
+List all the detections for the specific versions of the given Rule ID\(s\)
+
+Type: **investigate**  
+Read only: **True**
+
+The comma\-separated \[Rule ID\(s\)\] can be provided with or without versionId appended to each Rule ID\. If the user doesn't provide any of the time\-related action parameters, the action will perform a search for the last three days\. If the user provides \[Time Range\] and other time\-related action parameters, the priority will be given to the \[Time Range\] action parameter and the search will be performed according to its given value\.
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**rule\_ids** |  required  | Comma\-separated Rule ID\(s\) \(with or without versionId\) | string |  `gc rule id` 
+**alert\_state** |  optional  | Alert State to filter the detections | string | 
+**time\_range** |  optional  | Specify the time range of the search \(Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds\) | string |  `gc time range` 
+**start\_time** |  optional  | Specify the start time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**end\_time** |  optional  | Specify the end time of the search \(Use this format yyyy\-MM\-ddTHH\:mm\:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds\) | string |  `gc time` 
+**limit** |  optional  | Specify the maximum number of detections to return \(Default is 10,000\) | numeric | 
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.parameter\.alert\_state | string | 
+action\_result\.parameter\.end\_time | string |  `gc time` 
+action\_result\.parameter\.limit | numeric | 
+action\_result\.parameter\.rule\_ids | string |  `gc rule id` 
+action\_result\.parameter\.start\_time | string |  `gc time` 
+action\_result\.parameter\.time\_range | string |  `gc time range` 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.label | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.metadata\.eventTimestamp | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.metadata\.eventType | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.metadata\.ingestedTimestamp | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.metadata\.productName | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.applicationProtocol | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dns\.answers\.\*\.data | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dns\.answers\.\*\.name | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dns\.answers\.\*\.ttl | numeric | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dns\.answers\.\*\.type | numeric | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dns\.questions\.\*\.name | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dns\.questions\.\*\.type | numeric | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dns\.response | boolean | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.principal\.hostname | string | 
+action\_result\.data\.\*\.detections\.\*\.createdTime | string | 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.alertState | string | 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.detectionFields\.\*\.key | string | 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.detectionFields\.\*\.value | string | 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.ruleId | string |  `gc rule id` 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.ruleName | string | 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.ruleType | string | 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.ruleVersion | string |  `gc rule id` 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.urlBackToProduct | string | 
+action\_result\.data\.\*\.detections\.\*\.detectionTime | string | 
+action\_result\.data\.\*\.detections\.\*\.id | string | 
+action\_result\.data\.\*\.detections\.\*\.timeWindow\.endTime | string | 
+action\_result\.data\.\*\.detections\.\*\.timeWindow\.startTime | string | 
+action\_result\.data\.\*\.detections\.\*\.type | string | 
+action\_result\.data\.\*\.detections\_summary\.\*\.detections\_count | numeric | 
+action\_result\.data\.\*\.detections\_summary\.\*\.rule\_id | string |  `gc rule id` 
+action\_result\.data\.\*\.invalid\_rule\_ids\.\*\.rule\_id | string | 
+action\_result\.data\.\*\.rule\_ids\_with\_partial\_detections\.\*\.rule\_id | string | 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.ruleLabels\.\*\.key | string | 
+action\_result\.data\.\*\.detections\.\*\.detection\.\*\.ruleLabels\.\*\.value | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.target\.hostname | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dhcp\.type | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dhcp\.chaddr | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dhcp\.giaddr | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dhcp\.opcode | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dhcp\.yiaddr | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dhcp\.clientHostname | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dhcp\.clientIdentifier | string | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.network\.dhcp\.leaseTimeSeconds | numeric | 
+action\_result\.data\.\*\.detections\.\*\.collectionElements\.\*\.references\.\*\.event\.principal\.asset\.hostname | string | 
+action\_result\.summary\.total\_detections | numeric | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'on poll'
+Action handler for the on poll ingest functionality
+
+Type: **ingest**  
+Read only: **True**
+
+The action will ingest all of the 3rd party security alerts tracked within the enterprise and domain IoCs matches discovered within the enterprise as per the selected ingestion run mode\.
+
+#### Action Parameters
+PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
+--------- | -------- | ----------- | ---- | --------
+**start\_time** |  optional  | Parameter ignored in this app | numeric | 
+**end\_time** |  optional  | Parameter ignored in this app | numeric | 
+**container\_count** |  optional  | Parameter ignored in this app | numeric | 
+**artifact\_count** |  optional  | Parameter ignored in this app | numeric | 
+
+#### Action Output
+No Output
