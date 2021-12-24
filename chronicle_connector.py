@@ -1,7 +1,5 @@
-# --
 # File: chronicle_connector.py
-#
-# Copyright (c) 2020-2021 Google LLC.
+# Copyright (c) 2020-2021 Splunk Inc., Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,33 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# --
 
-# Phantom App imports
-import phantom.app as phantom
-from phantom.base_connector import BaseConnector
-from phantom.action_result import ActionResult
-
+import json
 import re
 import time
-import requests
-import json
-import httplib2
-from bs4 import BeautifulSoup
 from collections import defaultdict
 from datetime import datetime, timedelta
 from hashlib import sha256
 
-# Usage of the consts file is recommended
-from chronicle_consts import *      # noqa
-
+import httplib2
+import phantom.app as phantom
+import requests
+from bs4 import BeautifulSoup
 from google.oauth2 import service_account
 from googleapiclient import _auth
+from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
+
+from chronicle_consts import *  # noqa
 
 
 class ChronicleConnector(BaseConnector):
-    """Represent a connector module that implements the actions that are provided by the app. ChronicleConnector is a class that is derived from the BaseConnector class."""
+    """Represent a connector module that implements the actions that are provided by the app.
+    ChronicleConnector is a class that is derived from the BaseConnector class."""
 
     def __init__(self):
         """Initialize global variables."""
@@ -65,11 +59,11 @@ class ChronicleConnector(BaseConnector):
         self._malicious_category = None
         self._malicious_severity = None
         self._malicious_str_confidence = None
-        self._malicious_int_confidence = None
+        self._malicious_ic = None
         self._suspicious_category = None
         self._suspicious_severity = None
         self._suspicious_str_confidence = None
-        self._suspicious_int_confidence = None
+        self._suspicious_ic = None
 
         # Ingestion variable initialization
         self._run_mode = None
@@ -92,6 +86,7 @@ class ChronicleConnector(BaseConnector):
         self._last_run_hash_digests = dict()
         # Ingestion time dictionary initialization
         self._time_dict = dict()
+        self._verify = False
 
     def _process_empty_response(self, response, action_result):
         """Process empty response.
@@ -106,7 +101,8 @@ class ChronicleConnector(BaseConnector):
         if response[0].status == 200:
             return phantom.APP_SUCCESS, {}
 
-        return action_result.set_status(phantom.APP_ERROR, f"Status code: {response[0].status}. Empty response and no information in the header"), None
+        return action_result.set_status(phantom.APP_ERROR, f"Status code: {response[0].status}. "
+                                                            "Empty response and no information in the header"), None
 
     def _process_html_response(self, response, action_result):
         """Process html response.
@@ -160,7 +156,7 @@ class ChronicleConnector(BaseConnector):
                 return action_result.set_status(phantom.APP_ERROR, f"{GC_INVALID_RESPONSE_FORMAT} Error: {str(e)}"), None
 
         # Parse error message
-        err_message = self._parse_error_message(action_result, response[1])
+        err_message = self._parse_error_message(response[1])
 
         return action_result.set_status(phantom.APP_ERROR, err_message), None
 
@@ -216,7 +212,8 @@ class ChronicleConnector(BaseConnector):
             :param endpoint: REST endpoint that needs to appended to the service address
             :param method: GET/POST/PUT/DELETE/PATCH (Default will be GET)
         Returns:
-            :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message), response obtained by making an API call
+            :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message),
+                     response obtained by making an API call
         """
         # Create a URL to connect to Chronicle
         url = f"{self._base_url}{endpoint}"
@@ -243,7 +240,8 @@ class ChronicleConnector(BaseConnector):
                 self.debug_print(f"Received httplib2 response object: {response[0]}")
                 self.debug_print(f"Received original response: {response[1]}")
             except Exception as e:
-                return action_result.set_status(phantom.APP_ERROR, f"{GC_RESPONSE_ERROR}. Error while checking response. Error: {str(e)}"), None
+                return action_result.set_status(phantom.APP_ERROR,
+                                                f"{GC_RESPONSE_ERROR}. Error while checking response. Error: {str(e)}"), None
 
             # Expectation of response format (<object of httplib2.Response>, JSON response)
             if not isinstance(response[0], httplib2.Response):
@@ -526,7 +524,7 @@ class ChronicleConnector(BaseConnector):
                 # NOTE: This will be update if the reference time will not impact on the output results.
                 # And set the start time as reference time.
                 # Or we can set expectations as if parameter is given, it must be validated.
-                return action_result.set_status(phantom.APP_ERROR, "Please provide valid reference time in the action parameters"), time_param
+                return action_result.set_status(phantom.APP_ERROR, GC_INVALID_REFERENCE_TIME_MSG), time_param
             time_param.update({GC_REFERENCE_TIME_KEY: reference_time.strftime(GC_DATE_FORMAT)})
             return phantom.APP_SUCCESS, time_param
 
@@ -535,7 +533,8 @@ class ChronicleConnector(BaseConnector):
         return phantom.APP_SUCCESS, time_param
 
     def _validate_integers(self, action_result, parameter, key, allow_zero=False):
-        """Validate the provided input parameter value is a non-zero positive integer and returns the integer value of the parameter itself.
+        """Validate the provided input parameter value is a non-zero positive
+        integer and returns the integer value of the parameter itself.
 
         Parameters:
             :param action_result: object of ActionResult class
@@ -546,6 +545,10 @@ class ChronicleConnector(BaseConnector):
             :return: integer value of the parameter
         """
         try:
+            if not float(parameter).is_integer():
+                action_result.set_status(phantom.APP_ERROR, GC_INVALID_INTEGER_ERR_MSG.format(parameter=key))
+                return None
+
             parameter = int(parameter)
 
             if parameter <= 0:
@@ -558,18 +561,21 @@ class ChronicleConnector(BaseConnector):
                     return None
         except Exception as e:
             self.debug_print(f"Integer validation failed. Error occurred while validating integer value. Error: {str(e)}")
-            error_text = GC_LIMIT_VALIDATION_ALLOW_ZERO_MSG.format(parameter=key) if allow_zero else GC_LIMIT_VALIDATION_MSG.format(parameter=key)
+            if allow_zero:
+                error_text = GC_LIMIT_VALIDATION_ALLOW_ZERO_MSG.format(parameter=key)
+            else:
+                error_text = GC_LIMIT_VALIDATION_MSG.format(parameter=key)
             action_result.set_status(phantom.APP_ERROR, error_text)
             return None
 
         return parameter
 
     def _validate_comma_separated(self, action_result, comma_separated_int, key, is_date=False):
-        """Validate the comma-separated integer values which indication minimum and maximumm value.
+        """Validate the comma-separated integer values which indicate minimum and maximumm value.
 
         Parameters:
             :param action_result: object of ActionResult class
-            :param comma_separated_int: string value of comma-separted integer values
+            :param comma_separated_int: string value of comma-separated integer values
             :param key: string value of parameter name
             :param is_date: check for value is date string or not (by default work for integer)
         Returns:
@@ -587,7 +593,9 @@ class ChronicleConnector(BaseConnector):
 
         if is_date:
             # Works for comma-separated string date values
-            ret_val, start_date, end_date = self._validate_time_params(action_result, comma_separated_list[0], comma_separated_list[1])
+            ret_val, start_date, end_date = self._validate_time_params(action_result,
+                                                                       comma_separated_list[0],
+                                                                       comma_separated_list[1])
             if phantom.is_fail(ret_val):
                 return action_result.get_status(), None
 
@@ -666,44 +674,60 @@ class ChronicleConnector(BaseConnector):
         susp_int_confidence = config.get("suspicious_int_confidence_score")
         mal_int_confidence = config.get("malicious_int_confidence_score")
 
-        ret_val, self._malicious_category = self._validate_json(action_result, config.get("malicious_category"), GC_CONFIG_MALICIOUS_CATEGORY)
+        ret_val, self._malicious_category = self._validate_json(action_result,
+                                                                config.get("malicious_category"),
+                                                                GC_CONFIG_MALICIOUS_CATEGORY)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("malicious_category")
 
-        ret_val, self._malicious_severity = self._validate_json(action_result, config.get("malicious_severity"), GC_CONFIG_MALICIOUS_SEVERITY)
+        ret_val, self._malicious_severity = self._validate_json(action_result,
+                                                                config.get("malicious_severity"),
+                                                                GC_CONFIG_MALICIOUS_SEVERITY)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("malicious_severity")
 
-        ret_val, self._malicious_str_confidence = self._validate_json(action_result, config.get("malicious_str_confidence_score"), GC_CONFIG_MALICIOUS_STR_CONFIDENCE)
+        ret_val, self._malicious_str_confidence = self._validate_json(action_result,
+                                                                      config.get("malicious_str_confidence_score"),
+                                                                      GC_CONFIG_MALICIOUS_STR_CONFIDENCE)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("malicious_str_confidence_score")
 
         if mal_int_confidence:
-            ret_val, self._malicious_int_confidence = self._validate_comma_separated(action_result, mal_int_confidence, GC_CONFIG_MALICIOUS_INT_CONFIDENCE)
+            ret_val, self._malicious_ic = self._validate_comma_separated(action_result,
+                                                                         mal_int_confidence,
+                                                                         GC_CONFIG_MALICIOUS_INT_CONFIDENCE)
             if phantom.is_fail(ret_val):
                 self.debug_print(action_result.get_message())
                 error_int_score.append("malicious_int_confidence_score")
 
-        ret_val, self._suspicious_category = self._validate_json(action_result, config.get("suspicious_category"), GC_CONFIG_SUSPICIOUS_CATEGORY)
+        ret_val, self._suspicious_category = self._validate_json(action_result,
+                                                                 config.get("suspicious_category"),
+                                                                 GC_CONFIG_SUSPICIOUS_CATEGORY)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("suspicious_category")
 
-        ret_val, self._suspicious_severity = self._validate_json(action_result, config.get("suspicious_severity"), GC_CONFIG_SUSPICIOUS_SEVERITY)
+        ret_val, self._suspicious_severity = self._validate_json(action_result,
+                                                                 config.get("suspicious_severity"),
+                                                                 GC_CONFIG_SUSPICIOUS_SEVERITY)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("suspicious_severity")
 
-        ret_val, self._suspicious_str_confidence = self._validate_json(action_result, config.get("suspicious_str_confidence_score"), GC_CONFIG_SUSPICIOUS_STR_CONFIDENCE)
+        ret_val, self._suspicious_str_confidence = self._validate_json(action_result,
+                                                                       config.get("suspicious_str_confidence_score"),
+                                                                       GC_CONFIG_SUSPICIOUS_STR_CONFIDENCE)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("suspicious_str_confidence_score")
 
         if susp_int_confidence:
-            ret_val, self._suspicious_int_confidence = self._validate_comma_separated(action_result, susp_int_confidence, GC_CONFIG_SUSPICIOUS_INT_CONFIDENCE)
+            ret_val, self._suspicious_ic = self._validate_comma_separated(action_result,
+                                                                          susp_int_confidence,
+                                                                          GC_CONFIG_SUSPICIOUS_INT_CONFIDENCE)
             if phantom.is_fail(ret_val):
                 self.debug_print(action_result.get_message())
                 error_int_score.append("suspicious_int_confidence_score")
@@ -750,8 +774,8 @@ class ChronicleConnector(BaseConnector):
         check.append(category in self._malicious_category)
         check.append(severity in self._malicious_severity)
         check.append(str_confidence in self._malicious_str_confidence)
-        if self._malicious_int_confidence:
-            check.append(int_confidence and min(self._malicious_int_confidence) <= int(int_confidence) <= max(self._malicious_int_confidence))
+        if self._malicious_ic:
+            check.append(int_confidence and min(self._malicious_ic) <= int(int_confidence) <= max(self._malicious_ic))
 
         # Check for any of the above condition is true or not
         if any(check):
@@ -786,8 +810,8 @@ class ChronicleConnector(BaseConnector):
         check.append(category in self._suspicious_category)
         check.append(severity in self._suspicious_severity)
         check.append(str_confidence in self._suspicious_str_confidence)
-        if self._suspicious_int_confidence:
-            check.append(int_confidence and min(self._suspicious_int_confidence) <= int(int_confidence) <= max(self._suspicious_int_confidence))
+        if self._suspicious_ic:
+            check.append(int_confidence and min(self._suspicious_ic) <= int(int_confidence) <= max(self._suspicious_ic))
 
         # Check for any of the above condition is true or not
         if any(check):
@@ -795,11 +819,10 @@ class ChronicleConnector(BaseConnector):
 
         return reputation
 
-    def _define_reputation_type(self, action_result, reputation_resp):
+    def _define_reputation_type(self, reputation_resp):
         """Validate the configuration parameters which specified for the reputation actions.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param reputation_resp: response of make rest call with sources
         Returns:
             :return: reputation
@@ -839,7 +862,7 @@ class ChronicleConnector(BaseConnector):
         try:
             credentials = service_account.Credentials.from_service_account_info(self._key_dict, scopes=self._scopes)
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, f"Unable to create load the key json. Error: {str(e)}"), None
+            return action_result.set_status(phantom.APP_ERROR, f"Unable to load the key json. Error: {str(e)}"), None
 
         # Build an HTTP client which can make authorized OAuth requests.
         try:
@@ -849,11 +872,10 @@ class ChronicleConnector(BaseConnector):
 
         return phantom.APP_SUCCESS, http_client
 
-    def _parse_error_message(self, action_result, error):
+    def _parse_error_message(self, error):
         """Extract error message from error object.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param error: error bytes response to be parsed
         Returns:
             :return: error message
@@ -919,7 +941,9 @@ class ChronicleConnector(BaseConnector):
                 affected_assets[key] = list(value)
                 cnt += len(list(value))
 
-            alerts_assets_association_list.append({"alert_name": alert_name, "affected_assets": affected_assets, "asset_count": cnt})
+            alerts_assets_association_list.append({"alert_name": alert_name,
+                                                   "affected_assets": affected_assets,
+                                                   "asset_count": cnt})
         return alerts_assets_association_list
 
     def _generate_alert_users_association(self, alerts_users_association):
@@ -949,7 +973,10 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: asset alerts response with summary
         """
-        alerts_assets_association = defaultdict(lambda: {"hostname": set(), "assetIpAddress": set(), "mac": set(), "productId": set()})
+        alerts_assets_association = defaultdict(lambda: {"hostname": set(),
+                                                         "assetIpAddress": set(),
+                                                         "mac": set(),
+                                                         "productId": set()})
         response_with_summary = dict()
         asset_alerts = list()
 
@@ -1123,7 +1150,7 @@ class ChronicleConnector(BaseConnector):
         elif asset_indicator == "Product ID":
             req_param = f"?asset.product_id={value}"
         else:
-            return action_result.set_status(phantom.APP_ERROR, "Unexpected value for the 'asset indicator' action parameter"), None
+            return action_result.set_status(phantom.APP_ERROR, GC_INVALID_INDICATOR_VALUE_MSG), None
 
         endpoint = f"{GC_LIST_EVENTS_ENDPOINT}{req_param}&start_time={start_time}&reference_time={reference_time}&page_size=10000"
 
@@ -1159,8 +1186,8 @@ class ChronicleConnector(BaseConnector):
             self.save_progress("Test Connectivity Failed")
             return ret_val
 
-        self.save_progress("Note: Test connectivity action will not validate the other reputation and on poll related asset configuration \
-            parameters for optimum performance and they are only validated in their respective actions.")
+        self.save_progress("Note: Test connectivity action will not validate other reputation and on poll related asset configuration "
+                            "parameters for optimum performance. They will only be validated in their respective actions")
         self.save_progress("Making REST call to Chronicle for fetching the list of IoCs...")
 
         endpoint = "/v1/ioc/listiocs?start_time=1970-01-01T00:00:00Z&page_size=1"
@@ -1472,7 +1499,7 @@ class ChronicleConnector(BaseConnector):
 
         # Define reputation based on sources
         if response.get("sources"):
-            reputation = self._define_reputation_type(action_result, response)
+            reputation = self._define_reputation_type(response)
             response.update({"reputation": reputation})
 
         # Add response data to action result object
@@ -1521,7 +1548,7 @@ class ChronicleConnector(BaseConnector):
 
         # Define reputation based on sources
         if response.get("sources"):
-            reputation = self._define_reputation_type(action_result, response)
+            reputation = self._define_reputation_type(response)
             response.update({"reputation": reputation})
 
         # Add response data to action result object
@@ -1787,7 +1814,11 @@ class ChronicleConnector(BaseConnector):
             self.save_progress(f"Detections endpoint query for search: {endpoint}")
 
             # Call Paginator for v2 APIs
-            ret_val, detections = self._paginator_for_v2_apis(action_result, client, endpoint, data_subject='detections', limit=limit)
+            ret_val, detections = self._paginator_for_v2_apis(action_result,
+                                                              client,
+                                                              endpoint,
+                                                              data_subject='detections',
+                                                              limit=limit)
 
             if phantom.is_success(ret_val):
                 all_invalid_rule_ids = False
@@ -1895,7 +1926,9 @@ class ChronicleConnector(BaseConnector):
         """
         # Fetch alert severity
         if GC_RM_ASSET_ALERTS in self._run_mode:
-            ret_val, self._alerts_severity = self._validate_json(action_result, config.get("alerts_severity"), GC_CONFIG_ALERT_SEVERITY)
+            ret_val, self._alerts_severity = self._validate_json(action_result,
+                                                                 config.get("alerts_severity"),
+                                                                 GC_CONFIG_ALERT_SEVERITY)
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
 
@@ -1936,7 +1969,8 @@ class ChronicleConnector(BaseConnector):
         # Check for given start time is not before 1970-01-01T00:00:00Z
         ret_val = self._check_invalid_since_utc_time(action_result, start_time)
         if phantom.is_fail(ret_val):
-            return action_result.set_status(phantom.APP_ERROR, f"{action_result.get_message()} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
+            return action_result.set_status(phantom.APP_ERROR,
+                                            f"{action_result.get_message()} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
 
         # Taking current UTC time as end time
         end_time = datetime.utcnow()
@@ -1973,7 +2007,8 @@ class ChronicleConnector(BaseConnector):
                     # Given time range value not matched with any of the possible format of date
                     return action_result.set_status(phantom.APP_ERROR, GC_ON_POLL_INVALID_TIME_ERROR), None
             except OverflowError:
-                return action_result.set_status(phantom.APP_ERROR, f"{GC_UTC_SINCE_TIME_ERROR} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
+                return action_result.set_status(phantom.APP_ERROR,
+                                                f"{GC_UTC_SINCE_TIME_ERROR} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
             except Exception as e:
                 return action_result.set_status(phantom.APP_ERROR, f"{GC_ON_POLL_INVALID_TIME_ERROR} Error: {str(e)}"), None
 
@@ -2053,7 +2088,8 @@ class ChronicleConnector(BaseConnector):
         # If manual poll check only for given time range and return with calculated time range as per given asset params
         if self._is_poll_now:
             # Fetch time period
-            ret_val, start_time, end_time = self._validate_time_range_poll_now(action_result, config.get("time_range_poll_now", "3d"))
+            ret_val, start_time, end_time = self._validate_time_range_poll_now(action_result,
+                                                                               config.get("time_range_poll_now", "3d"))
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
             start_time_end_time_to_update = {
@@ -2067,14 +2103,22 @@ class ChronicleConnector(BaseConnector):
         # Check date format for '<digit><d/h/m/s>' or 'start_time' format for given 'start_time_scheduled_poll' asset config
         # It will return list of start time and end time
         # And this time list will use whenever we have to consider run as first run
-        ret_val, time = self._validate_time_other_format(action_result, config.get("start_time_scheduled_poll", "1970-01-01T00:00:00Z"))
+        ret_val, time = self._validate_time_other_format(action_result,
+                                                         config.get("start_time_scheduled_poll", "1970-01-01T00:00:00Z"))
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
         # For scheduled or interval
-        # Format for the last run keys should be consistent and should be for the form 'last_run_<run_mode>_time' (For run_mode refer chronicle_consts file)
-        last_run_keys = ["last_run_ioc_time", "last_run_alert_time", "last_run_user_alert_time", "last_run_alerting_detection_time", "last_run_not_alerting_detection_time"]
+        # Format for the last run keys should be consistent and should be for the form 'last_run_<run_mode>_time'
+        # (For run_mode refer chronicle_consts file)
+        last_run_keys = [
+            "last_run_ioc_time",
+            "last_run_alert_time",
+            "last_run_user_alert_time",
+            "last_run_alerting_detection_time",
+            "last_run_not_alerting_detection_time"
+        ]
 
         # Check for first run
         if not list(filter(lambda x: self._state.get(x) is not None, last_run_keys)):
@@ -2142,7 +2186,8 @@ class ChronicleConnector(BaseConnector):
 
         # Checking date format of retrieved date string from the state file
         self.debug_print(f"Check for '{run_mode.replace('_', ' ').title()}s'")
-        self.debug_print(f"Check that string date value {last_run_time} fetched from the state file is in the correct format {GC_DATE_FORMAT} or not")
+        self.debug_print(f"Check that string date value {last_run_time} fetched from "
+                         f"the state file is in the correct format {GC_DATE_FORMAT} or not")
         # Check for date string format
         check, _ = self._check_date_format(last_run_time)
         if not check:
@@ -2150,7 +2195,8 @@ class ChronicleConnector(BaseConnector):
             first_run = True
             start_time = first_run_time
         else:
-            self.debug_print("Considering the retrieved last_run_time value from the state file as the start_time for the next scheduled/interval poll")
+            self.debug_print("Considering the retrieved last_run_time value from the state file "
+                             "as the start_time for the next scheduled/interval poll")
             self.debug_print(f"Retrieved start_time for the {run_mode} run mode: {last_run_time}")
             # Next run for the scheduled/interval poll
             start_time = last_run_time
@@ -2286,7 +2332,8 @@ class ChronicleConnector(BaseConnector):
         for alert_info in alert_infos:
             # Ignore alerts which alert has configured severity to ingest
             if self._alerts_severity and alert_info.get('severity', '').lower() not in self._alerts_severity:
-                self.debug_print(f"Ignored alert: {alert_info.get('name', '')} which has severity: {alert_info.get('severity', '')}")
+                self.debug_print(f"Ignored alert: {alert_info.get('name', '')} "
+                                 f"which has severity: {alert_info.get('severity', '')}")
                 continue
 
             # Create 'cef' type artifact for individual alert by adding corresponding asset infos with alert infos
@@ -2384,7 +2431,8 @@ class ChronicleConnector(BaseConnector):
         try:
             confidence_int = list(map(lambda x: str(x), confidence_int))
         except Exception as e:
-            self.debug_print(f"Error occurred while converting intRawConfidenceScore value to 'str' type from 'int' type. Error: {str(e)}")
+            self.debug_print(f"Error occurred while converting intRawConfidenceScore value to 'str' type from 'int' type. "
+                             f"Error: {str(e)}")
             self.debug_print(f"Ignoring intRawConfidenceScore value from all the sources for IoC domain: {artifact[0][1]}")
             # Ignore all the intRawConfidenceScore
             confidence_int = list()
@@ -2456,7 +2504,8 @@ class ChronicleConnector(BaseConnector):
                 result = self._parse_ioc_info(ioc, artifact)
             except Exception as e:
                 self.debug_print(f"Exception occurred while parsing IoCs response. Error: {str(e)}")
-                self.debug_print(f"Ignoring IoC match for artifactIndicator: '{artifact[0][0]}' and artifactValue: '{artifact[0][1]}'")
+                self.debug_print(f"Ignoring IoC match for artifactIndicator: "
+                                 f"'{artifact[0][0]}' and artifactValue: '{artifact[0][1]}'")
 
             # Add alerts into final results
             if result:
@@ -2527,7 +2576,8 @@ class ChronicleConnector(BaseConnector):
             self.save_progress("No detections were fetched for them")
 
         if rule_ids_with_partial_detections:
-            rule_ids_with_partial_detections_str = list(map(lambda rule_ids_with_partial_detection: rule_ids_with_partial_detection['rule_id'], rule_ids_with_partial_detections))
+            map_func = lambda rule_ids_with_partial_detection: rule_ids_with_partial_detection['rule_id']
+            rule_ids_with_partial_detections_str = list(map(map_func, rule_ids_with_partial_detections))
             rule_ids_with_partial_detections_str = ', '.join(rule_ids_with_partial_detections_str)
             self.debug_print(f"Detections maybe missing for the following Rule ID(s):\n{rule_ids_with_partial_detections_str}")
             self.debug_print(GC_RATE_LIMIT_EXCEEDED)
@@ -2570,7 +2620,8 @@ class ChronicleConnector(BaseConnector):
         return parsed_detections
 
     def _fetch_rules_and_detections(self, action_result, client, rule_ids, alert_state, time_param, limit):
-        """Fetch a list of detections for the specified version of the given rule that is created in the Chronicle Detection Engine. This method will be used for On Poll action.
+        """Fetch a list of detections for the specified version of the given rule that is created in the Chronicle Detection Engine.
+        This method will be used for On Poll action.
 
         Parameters:
             :param action_result: object of ActionResult class
@@ -2677,7 +2728,12 @@ class ChronicleConnector(BaseConnector):
         if GC_RM_ALERTING_DETECTIONS in self._run_mode:
             alert_state = "ALERTING"
             time_param = self._time_dict[GC_RM_ALERTING_DETECTIONS]
-            ret_val, response, rule_ids = self._fetch_rules_and_detections(action_result, client, rule_ids, alert_state, time_param, self._max_results)
+            ret_val, response, rule_ids = self._fetch_rules_and_detections(action_result,
+                                                                           client,
+                                                                           rule_ids,
+                                                                           alert_state,
+                                                                           time_param,
+                                                                           self._max_results)
 
         if phantom.is_fail(ret_val):
             return action_result.get_status(), None
@@ -2690,24 +2746,30 @@ class ChronicleConnector(BaseConnector):
         if GC_RM_NOT_ALERTING_DETECTIONS in self._run_mode:
             alert_state = "NOT_ALERTING"
             time_param = self._time_dict[GC_RM_NOT_ALERTING_DETECTIONS]
-            ret_val, response, _ = self._fetch_rules_and_detections(action_result, client, rule_ids, alert_state, time_param, self._max_results)
+            ret_val, response, _ = self._fetch_rules_and_detections(action_result,
+                                                                    client,
+                                                                    rule_ids,
+                                                                    alert_state,
+                                                                    time_param,
+                                                                    self._max_results)
 
         if phantom.is_fail(ret_val):
             return action_result.get_status(), None
 
         # Parse Not-Alerting Detections response
-        results.update({GC_RM_NOT_ALERTING_DETECTIONS: self._parse_detections_response(response, run_mode=GC_RM_NOT_ALERTING_DETECTIONS)})
+        results.update({GC_RM_NOT_ALERTING_DETECTIONS: self._parse_detections_response(response,
+                                                                                       run_mode=GC_RM_NOT_ALERTING_DETECTIONS)})
 
         return phantom.APP_SUCCESS, results
 
-    def _check_for_existing_container(self, action_result, name):
+    def _check_for_existing_container(self, name):
         """Check for existing container and return container ID and and remaining margin count.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param name: Name of the container to check
         Returns:
-            :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR), cid(container_id), count(remaining margin calculated with given _max_artifacts)
+            :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR), cid(container_id),
+                     count(remaining margin calculated with given _max_artifacts)
         """
         cid = None
         count = None
@@ -2715,7 +2777,7 @@ class ChronicleConnector(BaseConnector):
         url = f'{self.get_phantom_base_url()}rest/container?_filter_name__contains="{name}"&sort=start_time&order=desc'
 
         try:
-            r = requests.get(url, verify=False)
+            r = requests.get(url, verify=self._verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
         except Exception as e:
             self.debug_print("Error making local rest call: {0}".format(str(e)))
             self.debug_print('DB QUERY: {}'.format(url))
@@ -2762,11 +2824,10 @@ class ChronicleConnector(BaseConnector):
 
         return phantom.APP_SUCCESS, cid, count
 
-    def _create_detection_artifacts(self, action_result, alerting_detections, not_alerting_detections):
+    def _create_detection_artifacts(self, alerting_detections, not_alerting_detections):
         """Create Detections artifacts from the fetched Detections.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param alerting_detections: list of Alerting Detections
             :param not_alerting_detections: list of Not Alerting Detections
         Returns:
@@ -2824,11 +2885,10 @@ class ChronicleConnector(BaseConnector):
 
         return alerting_detection_artifacts, not_alerting_detection_artifacts
 
-    def _create_user_alert_artifacts(self, action_result, user_alerts):
+    def _create_user_alert_artifacts(self, user_alerts):
         """Create User Alerts artifacts from the fetched User Alerts.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param user_alerts: list of User Alerts
         Returns:
             :return: list of artifacts
@@ -2859,11 +2919,10 @@ class ChronicleConnector(BaseConnector):
 
         return artifacts
 
-    def _create_alert_artifacts(self, action_result, alerts):
+    def _create_alert_artifacts(self, alerts):
         """Create Alert artifacts from the fetched Alerts.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param alerts: list of Alerts
         Returns:
             :return: list of artifacts
@@ -2894,11 +2953,10 @@ class ChronicleConnector(BaseConnector):
 
         return artifacts
 
-    def _create_ioc_artifacts(self, action_result, iocs):
+    def _create_ioc_artifacts(self, iocs):
         """Create IoC artifacts from the fetched IoCs.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param iocs: list of IoCs
         Returns:
             :return: list of artifacts
@@ -2933,11 +2991,10 @@ class ChronicleConnector(BaseConnector):
 
         return artifacts
 
-    def _save_ingested(self, action_result, artifacts, key, cid=None):
+    def _save_ingested(self, artifacts, key, cid=None):
         """Save the artifacts into the given container ID(cid) and if not given create new container with given key(name).
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param artifacts: list of artifacts of IoCs or alerts results
             :param key: name of the container in which data will be ingested
             :param cid: value of container ID
@@ -2962,11 +3019,10 @@ class ChronicleConnector(BaseConnector):
 
         return ret_val, message, cid
 
-    def _save_artifacts(self, action_result, results, run_mode, key):
+    def _save_artifacts(self, results, run_mode, key):
         """Ingest all the given artifacts accordingly into the new or existing container.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param results: list of artifacts of IoCs or alerts results
             :param run_mode: current run_mode for which artifacts will be saved
             :param key: name of the container in which data will be ingested
@@ -2984,12 +3040,12 @@ class ChronicleConnector(BaseConnector):
 
         # Check for existing container only if it's a scheduled/interval poll and not first run
         if not (self._is_poll_now or self._is_first_run[run_mode]):
-            ret_val, cid, count = self._check_for_existing_container(action_result, key)
+            ret_val, cid, count = self._check_for_existing_container(key)
             if phantom.is_fail(ret_val):
                 self.debug_print("Failed to check for existing container")
 
         if cid and count:
-            ret_val = self._ingest_artifacts(action_result, results[:count], key, cid=cid)
+            ret_val = self._ingest_artifacts(results[:count], key, cid=cid)
             if phantom.is_fail(ret_val):
                 self.debug_print("Failed to save ingested artifacts in the existing container")
                 return
@@ -3000,24 +3056,24 @@ class ChronicleConnector(BaseConnector):
         artifacts = [results[i:i + self._max_artifacts] for i in range(start, len(results), self._max_artifacts)]
 
         for artifacts_list in artifacts:
-            ret_val = self._ingest_artifacts(action_result, artifacts_list, key)
+            ret_val = self._ingest_artifacts(artifacts_list, key)
             if phantom.is_fail(ret_val):
                 self.debug_print("Failed to save ingested artifacts in the new container")
                 return
 
-    def _ingest_artifacts(self, action_result, artifacts, key, cid=None):
+    def _ingest_artifacts(self, artifacts, key, cid=None):
         """Ingest artifacts into the Phantom server.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param artifacts: list of artifacts
             :param key: name of the container in which data will be ingested
             :param cid: value of container ID
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
-        self.debug_print(f"Ingesting {len(artifacts)} artifacts for {key} results into the {'existing' if cid else 'new'} container")
-        ret_val, message, cid = self._save_ingested(action_result, artifacts, key, cid=cid)
+        self.debug_print(f"Ingesting {len(artifacts)} artifacts for {key} results "
+                         f"into the {'existing' if cid else 'new'} container")
+        ret_val, message, cid = self._save_ingested(artifacts, key, cid=cid)
 
         if phantom.is_fail(ret_val):
             self.debug_print(f"Failed to save ingested artifacts, error msg: {message}")
@@ -3025,11 +3081,10 @@ class ChronicleConnector(BaseConnector):
 
         return phantom.APP_SUCCESS
 
-    def _save_results(self, action_result, results):
+    def _save_results(self, results):
         """Parse results and ingest results into the Phantom server.
 
         Parameters:
-            :param action_result: object of ActionResult class
             :param results: Dictionary of IoCs and alerts results
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
@@ -3044,7 +3099,7 @@ class ChronicleConnector(BaseConnector):
         # Create artifacts from the IoCs results
         try:
             self.debug_print("Try to create artifacts for the IoC domain matches")
-            iocs = self._create_ioc_artifacts(action_result, iocs)
+            iocs = self._create_ioc_artifacts(iocs)
             self.debug_print(f"Total IoC artifacts created: {len(iocs)}")
         except Exception as e:
             self.debug_print(f"Error occurred while creating artifacts for IoCs. Error: {str(e)}")
@@ -3055,7 +3110,7 @@ class ChronicleConnector(BaseConnector):
         # Create artifacts from the alerts results
         try:
             self.debug_print("Try to create artifacts for the alerts")
-            alerts = self._create_alert_artifacts(action_result, alerts)
+            alerts = self._create_alert_artifacts(alerts)
             self.debug_print(f"Total Alert artifacts created: {len(alerts)}")
         except Exception as e:
             self.debug_print(f"Error occurred while creating artifacts for alerts. Error: {str(e)}")
@@ -3066,7 +3121,7 @@ class ChronicleConnector(BaseConnector):
         # Create artifacts from the user alerts results
         try:
             self.debug_print("Try to create artifacts for the user alerts")
-            user_alerts = self._create_user_alert_artifacts(action_result, user_alerts)
+            user_alerts = self._create_user_alert_artifacts(user_alerts)
             self.debug_print(f"Total User Alerts artifacts created: {len(user_alerts)}")
         except Exception as e:
             self.debug_print(f"Error occurred while creating artifacts for user alerts. Error: {str(e)}")
@@ -3077,7 +3132,8 @@ class ChronicleConnector(BaseConnector):
         # Create artifacts from the alerting detections results
         try:
             self.debug_print("Try to create artifacts for the detections")
-            alerting_detections, not_alerting_detections = self._create_detection_artifacts(action_result, alerting_detections, not_alerting_detections)
+            alerting_detections, not_alerting_detections = self._create_detection_artifacts(alerting_detections,
+                                                                                            not_alerting_detections)
             self.debug_print(f"Total Alerting detection artifacts created: {len(alerting_detections)}")
             self.debug_print(f"Total Not-alerting detection artifacts created: {len(not_alerting_detections)}")
         except Exception as e:
@@ -3089,45 +3145,45 @@ class ChronicleConnector(BaseConnector):
         # Save artifacts for IoCs
         try:
             self.debug_print("Try to ingest artifacts for the IoC domain matches")
-            self._save_artifacts(action_result, iocs, run_mode=GC_RM_IOC_DOMAINS, key=GC_IOC_RUN_MODE_KEY)
+            self._save_artifacts(iocs, run_mode=GC_RM_IOC_DOMAINS, key=GC_IOC_RUN_MODE_KEY)
         except Exception as e:
             self.debug_print(f"Error occurred while saving artifacts for IoCs. Error: {str(e)}")
 
         # Save artifacts for alerts
         try:
             self.debug_print("Try to ingest artifacts for the alerts")
-            self._save_artifacts(action_result, alerts, run_mode=GC_RM_ASSET_ALERTS, key=GC_ALERT_RUN_MODE_KEY)
+            self._save_artifacts(alerts, run_mode=GC_RM_ASSET_ALERTS, key=GC_ALERT_RUN_MODE_KEY)
         except Exception as e:
             self.debug_print(f"Error occurred while saving artifacts for alerts. Error: {str(e)}")
 
         # Save artifacts for user alerts
         try:
             self.debug_print("Try to ingest artifacts for the user alerts")
-            self._save_artifacts(action_result, user_alerts, run_mode=GC_RM_USER_ALERTS, key=GC_USER_ALERT_RUN_MODE_KEY)
+            self._save_artifacts(user_alerts, run_mode=GC_RM_USER_ALERTS, key=GC_USER_ALERT_RUN_MODE_KEY)
         except Exception as e:
             self.debug_print(f"Error occurred while saving artifacts for user alerts. Error: {str(e)}")
 
         # Save artifacts for alerting detections
         try:
             self.debug_print("Try to ingest artifacts for the alerting detections")
-            self._save_artifacts(action_result, alerting_detections, run_mode=GC_RM_ALERTING_DETECTIONS, key=GC_ALERTING_DETECTION_RUN_MODE_KEY)
+            self._save_artifacts(alerting_detections, run_mode=GC_RM_ALERTING_DETECTIONS, key=GC_ALERTING_DETECTION_RUN_MODE_KEY)
         except Exception as e:
             self.debug_print(f"Error occurred while saving artifacts for alerting detections. Error: {str(e)}")
 
         # Save artifacts for not alerting detections
         try:
             self.debug_print("Try to ingest artifacts for the not alerting detections")
-            self._save_artifacts(action_result, not_alerting_detections, run_mode=GC_RM_NOT_ALERTING_DETECTIONS, key=GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY)
+            self._save_artifacts(not_alerting_detections,
+                                 run_mode=GC_RM_NOT_ALERTING_DETECTIONS,
+                                 key=GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY)
         except Exception as e:
             self.debug_print(f"Error occurred while saving artifacts for not alerting detections. Error: {str(e)}")
 
         return phantom.APP_SUCCESS
 
-    def _save_state(self, action_result):
+    def _save_state(self):
         """Save the last run state as per the given ingestion asset configuration parameters.
 
-        Parameters:
-            :param action_result: object of ActionResult class
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
@@ -3154,7 +3210,13 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
-        DEFAULT_ALL_MODE_LIST = [GC_RM_IOC_DOMAINS, GC_RM_ASSET_ALERTS, GC_RM_USER_ALERTS, GC_RM_ALERTING_DETECTIONS, GC_RM_NOT_ALERTING_DETECTIONS]
+        DEFAULT_ALL_MODE_LIST = [
+            GC_RM_IOC_DOMAINS,
+            GC_RM_ASSET_ALERTS,
+            GC_RM_USER_ALERTS,
+            GC_RM_ALERTING_DETECTIONS,
+            GC_RM_NOT_ALERTING_DETECTIONS
+        ]
 
         # Fetch ingestion run mode
         self._run_mode = GC_RM_ON_POLL_DICT.get(config.get("run_mode", "All"), DEFAULT_ALL_MODE_LIST)
@@ -3189,14 +3251,14 @@ class ChronicleConnector(BaseConnector):
         # Parse results as per the given ingestion run mode
         self.debug_print("Ingest results as per the given ingestion run mode")
         self.save_progress("Ingest results as per the given ingestion run mode")
-        ret_val = self._save_results(action_result, results)
+        ret_val = self._save_results(results)
         if phantom.is_fail(ret_val):
             self.debug_print("Failed to ingest the results as per the given ingestion run mode")
             self.save_progress("Failed to ingest the results as per the given ingestion run mode")
             return action_result.get_status()
 
         # Save state as per the configured ingestion run mode
-        ret_val = self._save_state(action_result)
+        ret_val = self._save_state()
         if phantom.is_fail(ret_val):
             self.debug_print("Failed to save the last run state as per the given ingestion run mode")
             return action_result.get_status()
@@ -3277,7 +3339,8 @@ class ChronicleConnector(BaseConnector):
         """Initialize the global variables with its value and validate it.
 
         Initialization method that can be implemented by the AppConnector derived class.
-        Since the configuration dictionary is already validated by the time this method is called, it's a good place to do any extra initialization of any internal modules.
+        Since the configuration dictionary is already validated by the time this method is called,
+        it's a good place to do any extra initialization of any internal modules.
         This method MUST return a value of either phantom.APP_SUCCESS or phantom.APP_ERROR.
         If this method returns phantom.APP_ERROR, then AppConnector::handle_action will not get called.
 
@@ -3338,8 +3401,10 @@ class ChronicleConnector(BaseConnector):
 
 def main():
     """Use this method to debug action using input test JSON file."""
-    import pudb
     import argparse
+    import sys
+
+    import pudb
 
     pudb.set_trace()
 
@@ -3348,12 +3413,14 @@ def main():
     argparser.add_argument('input_test_json', help='Input Test JSON file')
     argparser.add_argument('-u', '--username', help='username', required=False)
     argparser.add_argument('-p', '--password', help='password', required=False)
+    argparser.add_argument('-v', '--verify', help='verify', required=False, default=False)
 
     args = argparser.parse_args()
     session_id = None
 
     username = args.username
     password = args.password
+    verify = args.verify
 
     if username is not None and password is None:
 
@@ -3366,7 +3433,7 @@ def main():
             login_url = ChronicleConnector._get_phantom_base_url() + '/login'
 
             print("Accessing the Login page")
-            r = requests.get(login_url, verify=False)
+            r = requests.get(login_url, verify=verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -3379,11 +3446,14 @@ def main():
             headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post(login_url, verify=False, data=data, headers=headers)
+            r2 = requests.post(login_url,  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+                               verify=verify,
+                               data=data,
+                               headers=headers)
             session_id = r2.cookies['sessionid']
         except Exception as e:
             print("Unable to get session id from the platform. Error: " + str(e))
-            exit(1)
+            sys.exit(1)
 
     with open(args.input_test_json) as f:
         in_json = f.read()
@@ -3400,7 +3470,7 @@ def main():
         ret_val = connector._handle_action(json.dumps(in_json), None)
         print(json.dumps(json.loads(ret_val), indent=4))
 
-    exit(0)
+    sys.exit(0)
 
 
 if __name__ == '__main__':
