@@ -2,7 +2,7 @@
 # Chronicle
 
 Publisher: Splunk  
-Connector Version: 2\.2\.4  
+Connector Version: 2\.2\.5  
 Product Vendor: Google Cloud  
 Product Name: Chronicle  
 Product Version Supported (regex): "\.\*"  
