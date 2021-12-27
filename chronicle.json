@@ -11,7 +11,7 @@
     "product_version_regex": ".*",
     "publisher": "Splunk",
     "license": "Copyright (c) 2020-2021 Splunk Inc.",
-    "app_version": "2.2.4",
+    "app_version": "2.2.5",
     "utctime_updated": "2021-12-23T06:39:47.000000Z",
     "package_name": "phantom_chronicle",
     "main_module": "chronicle_connector.py",
