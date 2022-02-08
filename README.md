@@ -2,17 +2,17 @@
 # Chronicle
 
 Publisher: Splunk  
-Connector Version: 2\.2\.5  
+Connector Version: 2\.2\.6  
 Product Vendor: Google Cloud  
 Product Name: Chronicle  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 5\.0\.0  
+Minimum Product Version: 5\.1\.0  
 
 This app enables the end\-user to search, analyze, and ingest the enterprise security data stored in the Chronicle using investigative, reputation, and ingestion actions
 
-[comment]: # " File: readme.md"
+[comment]: # " File: README.md"
 [comment]: # ""
-[comment]: # "    Copyright (c) 2020-2021 Splunk Inc., Google LLC."
+[comment]: # "    Copyright (c) 2020-2022 Splunk Inc."
 [comment]: # ""
 [comment]: # "    Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "    you may not use this file except in compliance with the License."
