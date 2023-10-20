@@ -390,11 +390,11 @@ class ChronicleConnector(BaseConnector):
         # Checking date format
         e_check, end_time = self._check_date_format(end_date)
         if not e_check:
-            return action_result.set_status(phantom.APP_ERROR, GC_INVALID_TIME_ERR.format("end time")), None
+            return action_result.set_status(phantom.APP_ERROR, GC_INVALID_TIME_ERROR.format("end time")), None
 
         # Checking future date
         if end_time > today:
-            return action_result.set_status(phantom.APP_ERROR, GC_GREATER_TIME_ERR.format("end time")), None
+            return action_result.set_status(phantom.APP_ERROR, GC_GREATER_TIME_ERROR.format("end time")), None
 
         # Checking end date must be lower than start date
         if start_time >= end_time:
@@ -415,10 +415,10 @@ class ChronicleConnector(BaseConnector):
         # Checking start time format
         s_check, start_time = self._check_date_format(start_date)
         if not s_check:
-            return action_result.set_status(phantom.APP_ERROR, GC_INVALID_TIME_ERR.format("start time")), None
+            return action_result.set_status(phantom.APP_ERROR, GC_INVALID_TIME_ERROR.format("start time")), None
 
         if start_time > today:
-            return action_result.set_status(phantom.APP_ERROR, GC_GREATER_TIME_ERR.format("start time")), None
+            return action_result.set_status(phantom.APP_ERROR, GC_GREATER_TIME_ERROR.format("start time")), None
 
         # Check for start time
         ret_val = self._check_invalid_since_utc_time(action_result, start_time)
@@ -546,7 +546,7 @@ class ChronicleConnector(BaseConnector):
         """
         try:
             if not float(parameter).is_integer():
-                action_result.set_status(phantom.APP_ERROR, GC_INVALID_INTEGER_ERR_MSG.format(parameter=key))
+                action_result.set_status(phantom.APP_ERROR, GC_INVALID_INTEGER_ERROR_MSG.format(parameter=key))
                 return None
 
             parameter = int(parameter)
@@ -636,13 +636,13 @@ class ChronicleConnector(BaseConnector):
                     value = json.loads(parameter, strict=False)
                     # Check for valid JSON dictionary if is_dict is set to True
                     if not isinstance(value, dict):
-                        return action_result.set_status(phantom.APP_ERROR, GC_INVALID_DICT_JSON_ERR.format(key)), None
+                        return action_result.set_status(phantom.APP_ERROR, GC_INVALID_DICT_JSON_ERROR.format(key)), None
                 else:
                     # Load the json value
                     value = json.loads(parameter)
                     # Check for valid JSON formatted list if is_dict is not set
                     if not isinstance(value, list):
-                        return action_result.set_status(phantom.APP_ERROR, GC_INVALID_LIST_JSON_ERR.format(key)), None
+                        return action_result.set_status(phantom.APP_ERROR, GC_INVALID_LIST_JSON_ERROR.format(key)), None
                     # Remove empty values from the list
                     value = list(filter(None, value))
                     # Convert whole list of strings to lowercase if is_lower is set to True
@@ -734,7 +734,7 @@ class ChronicleConnector(BaseConnector):
 
         # Join all the keys which have incorrect format value
         if error_msg_list:
-            error_list = GC_INVALID_LIST_JSON_ERR.format(", ".join(error_msg_list))
+            error_list = GC_INVALID_LIST_JSON_ERROR.format(", ".join(error_msg_list))
             error_msg = f"{error_msg} {error_list}"
 
         if error_int_score:
@@ -884,10 +884,10 @@ class ChronicleConnector(BaseConnector):
         try:
             json_error = json.loads(error)
         except json.decoder.JSONDecodeError:
-            self.debug_print(f'{GC_INVALID_ERR_RESPONSE_FORMAT} Response - {error}')
-            return GC_INVALID_ERR_RESPONSE_FORMAT
+            self.debug_print(f'{GC_INVALID_ERROR_RESPONSE_FORMAT} Response - {error}')
+            return GC_INVALID_ERROR_RESPONSE_FORMAT
         except Exception as e:
-            return f"{GC_INVALID_ERR_RESPONSE_FORMAT} Error: {str(e)}"
+            return f"{GC_INVALID_ERROR_RESPONSE_FORMAT} Error: {str(e)}"
 
         # Fetch error code
         error_code = json_error.get('error', {}).get('code')
@@ -1182,7 +1182,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.save_progress(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.save_progress(GC_UNABLE_CREATE_CLIENT_ERROR)
             self.save_progress("Test Connectivity Failed")
             return ret_val
 
@@ -1217,7 +1217,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Fetch action parameters
@@ -1269,7 +1269,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Fetch action parameters
@@ -1344,7 +1344,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Time period calculation
@@ -1421,7 +1421,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Fetch action parameters
@@ -1476,7 +1476,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Validate specified reputation related asset configuration parameters
@@ -1526,7 +1526,7 @@ class ChronicleConnector(BaseConnector):
 
         ret_val, client = self._create_client(action_result)
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Validate specified reputation related asset configuration parameters
@@ -1601,7 +1601,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Validate the 'limit' action parameter
@@ -1750,7 +1750,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return action_result.get_status()
 
         # Validate the 'limit' action parameter
@@ -1874,7 +1874,7 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Validate the 'limit' action parameter
@@ -1977,7 +1977,7 @@ class ChronicleConnector(BaseConnector):
 
         # Checking future date
         if start_time >= end_time:
-            return action_result.set_status(phantom.APP_ERROR, GC_GREATER_EQUAL_TIME_ERR.format(GC_CONFIG_TIME_POLL_NOW)), None
+            return action_result.set_status(phantom.APP_ERROR, GC_GREATER_EQUAL_TIME_ERROR.format(GC_CONFIG_TIME_POLL_NOW)), None
 
         return phantom.APP_SUCCESS, end_time
 
@@ -3282,8 +3282,8 @@ class ChronicleConnector(BaseConnector):
         ret_val, client = self._create_client(action_result)
 
         if phantom.is_fail(ret_val):
-            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERR)
-            self.save_progress(GC_UNABLE_CREATE_CLIENT_ERR)
+            self.debug_print(GC_UNABLE_CREATE_CLIENT_ERROR)
+            self.save_progress(GC_UNABLE_CREATE_CLIENT_ERROR)
             return ret_val
 
         # Get the asset config
