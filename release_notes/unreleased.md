@@ -1,2 +1,2 @@
 **Unreleased**
-* Updated protobuf package
+* Updated protobuf package [PAPP-31091]
