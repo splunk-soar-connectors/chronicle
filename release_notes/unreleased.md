@@ -1,2 +1,2 @@
 **Unreleased**
-Updated protobuf package due to vulnerability [PAPP-31091]
+* Updated protobuf package [PAPP-31091]
