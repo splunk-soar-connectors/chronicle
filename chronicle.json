@@ -11,7 +11,7 @@
     "product_version_regex": ".*",
     "publisher": "Splunk",
     "license": "Copyright (c) 2020-2023 Splunk Inc.",
-    "app_version": "2.2.7",
+    "app_version": "2.2.8",
     "utctime_updated": "2023-10-25T16:04:15.000000Z",
     "package_name": "phantom_chronicle",
     "main_module": "chronicle_connector.py",
@@ -2959,16 +2959,12 @@
                 "input_file": "wheels/py3/cachetools-4.1.1-py3-none-any.whl"
             },
             {
-                "module": "certifi",
-                "input_file": "wheels/py3/certifi-2023.7.22-py3-none-any.whl"
-            },
-            {
                 "module": "charset_normalizer",
-                "input_file": "wheels/py39/charset_normalizer-3.3.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+                "input_file": "wheels/py39/charset_normalizer-3.3.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
             },
             {
                 "module": "google_api_core",
-                "input_file": "wheels/py3/google_api_core-2.12.0-py3-none-any.whl"
+                "input_file": "wheels/py3/google_api_core-2.15.0-py3-none-any.whl"
             },
             {
                 "module": "google_api_python_client",
@@ -2976,7 +2972,7 @@
             },
             {
                 "module": "google_auth",
-                "input_file": "wheels/shared/google_auth-2.23.3-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/google_auth-2.25.2-py2.py3-none-any.whl"
             },
             {
                 "module": "google_auth_httplib2",
@@ -2988,15 +2984,11 @@
             },
             {
                 "module": "googleapis_common_protos",
-                "input_file": "wheels/shared/googleapis_common_protos-1.61.0-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/googleapis_common_protos-1.62.0-py2.py3-none-any.whl"
             },
             {
                 "module": "httplib2",
                 "input_file": "wheels/py3/httplib2-0.22.0-py3-none-any.whl"
-            },
-            {
-                "module": "idna",
-                "input_file": "wheels/py3/idna-3.4-py3-none-any.whl"
             },
             {
                 "module": "oauth2client",
@@ -3008,7 +3000,7 @@
             },
             {
                 "module": "protobuf",
-                "input_file": "wheels/py3/protobuf-4.24.4-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
+                "input_file": "wheels/py3/protobuf-4.25.1-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
             },
             {
                 "module": "pyasn1",
