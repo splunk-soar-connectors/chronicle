@@ -12,7 +12,7 @@ This app enables the end-user to search, analyze, and ingest the enterprise secu
 
 [comment]: # " File: README.md"
 [comment]: # ""
-[comment]: # "    Copyright (c) 2020-2023 Splunk Inc."
+[comment]: # "    Copyright (c) 2020-2024 Splunk Inc."
 [comment]: # ""
 [comment]: # "    Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "    you may not use this file except in compliance with the License."

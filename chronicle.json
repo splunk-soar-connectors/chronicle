@@ -10,12 +10,12 @@
     "python_version": "3",
     "product_version_regex": ".*",
     "publisher": "Splunk",
-    "license": "Copyright (c) 2020-2023 Splunk Inc.",
+    "license": "Copyright (c) 2020-2024 Splunk Inc.",
     "app_version": "2.2.7",
     "utctime_updated": "2023-10-25T16:04:15.000000Z",
     "package_name": "phantom_chronicle",
     "main_module": "chronicle_connector.py",
-    "min_phantom_version": "5.5.0",
+    "min_phantom_version": "6.2.1",
     "fips_compliant": true,
     "latest_tested_versions": [
         "v1.7.1"
