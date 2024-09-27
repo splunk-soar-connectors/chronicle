@@ -79,7 +79,7 @@ class ChronicleConnector(BaseConnector):
             GC_RM_ASSET_ALERTS: False,
             GC_RM_USER_ALERTS: False,
             GC_RM_ALERTING_DETECTIONS: False,
-            GC_RM_NOT_ALERTING_DETECTIONS: False
+            GC_RM_NOT_ALERTING_DETECTIONS: False,
         }
 
         # Use this dictionary to maintain the hash for the fetched results
@@ -101,8 +101,12 @@ class ChronicleConnector(BaseConnector):
         if response[0].status == 200:
             return phantom.APP_SUCCESS, {}
 
-        return action_result.set_status(phantom.APP_ERROR, f"Status code: {response[0].status}. "
-                                                            "Empty response and no information in the header"), None
+        return (
+            action_result.set_status(
+                phantom.APP_ERROR, f"Status code: {response[0].status}. " "Empty response and no information in the header"
+            ),
+            None,
+        )
 
     def _process_html_response(self, response, action_result):
         """Process html response.
@@ -121,16 +125,16 @@ class ChronicleConnector(BaseConnector):
             for element in soup(["script", "style", "footer", "nav"]):
                 element.extract()
             error_text = soup.text
-            split_lines = error_text.split('\n')
+            split_lines = error_text.split("\n")
             split_lines = [x.strip() for x in split_lines if x.strip()]
-            error_text = '\n'.join(split_lines)
+            error_text = "\n".join(split_lines)
         except Exception as e:
             self.debug_print(f"Error occurred while processing html response. Error: {str(e)}")
             error_text = f"Cannot parse error details. Response: {response[1]}"
 
         message = f"Status Code: {response[0].status}. Cannot parse error details. Data from server:\n{error_text}\n"
 
-        message = message.replace('{', '{{').replace('}', '}}')
+        message = message.replace("{", "{{").replace("}", "}}")
 
         return action_result.set_status(phantom.APP_ERROR, message), None
 
@@ -170,35 +174,35 @@ class ChronicleConnector(BaseConnector):
             :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message), response
         """
         # Store the response_text in debug data, it will get dumped in the logs if the action fails
-        if hasattr(action_result, 'add_debug_data'):
-            action_result.add_debug_data({'response_status_code': r[0].status})
-            action_result.add_debug_data({'response_text': r[1]})
-            action_result.add_debug_data({'response_http': r[0]})
+        if hasattr(action_result, "add_debug_data"):
+            action_result.add_debug_data({"response_status_code": r[0].status})
+            action_result.add_debug_data({"response_text": r[1]})
+            action_result.add_debug_data({"response_http": r[0]})
 
         # Check for the response status code
         if r[0].status == 500:
             return action_result.set_status(phantom.APP_ERROR, f"Status code: {r[0].status}. {GC_INTERNAL_SERVER_ERROR}"), None
 
         # Process each 'Content-Type' of response separately
-        content_type = r[0].get('content-type')
+        content_type = r[0].get("content-type")
 
         # handle an empty response and check that response is available
         if not r[1]:
             return self._process_empty_response(r, action_result)
 
         # Process a json response
-        if 'json' in content_type:
+        if "json" in content_type:
             return self._process_json_response(r, action_result)
 
         # Process an HTML response, Do this no matter what the api talks.
         # There is a high chance of a PROXY in between phantom and the rest of
         # world, in case of errors, PROXY's return HTML, this function parses
         # the error and adds it to the action_result.
-        if 'html' in content_type:
+        if "html" in content_type:
             return self._process_html_response(r, action_result)
 
         # everything else is actually an error at this point
-        err_resp = r[1].replace('{', '{{').replace('}', '}}') if r[1] else "Response error text not found"
+        err_resp = r[1].replace("{", "{{").replace("}", "}}") if r[1] else "Response error text not found"
         message = f"Can't process response from server. Status Code: {r[0].status} Data from server: {err_resp}"
 
         return action_result.set_status(phantom.APP_ERROR, message), None
@@ -240,8 +244,7 @@ class ChronicleConnector(BaseConnector):
                 self.debug_print(f"Received httplib2 response object: {response[0]}")
                 self.debug_print(f"Received original response: {response[1]}")
             except Exception as e:
-                return action_result.set_status(phantom.APP_ERROR,
-                                                f"{GC_RESPONSE_ERROR}. Error while checking response. Error: {str(e)}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"{GC_RESPONSE_ERROR}. Error while checking response. Error: {str(e)}"), None
 
             # Expectation of response format (<object of httplib2.Response>, JSON response)
             if not isinstance(response[0], httplib2.Response):
@@ -482,11 +485,7 @@ class ChronicleConnector(BaseConnector):
         start_date = str()
         end_date = str()
         time_param = dict()
-        time_param.update({
-            GC_START_TIME_KEY: None,
-            GC_END_TIME_KEY: None,
-            GC_REFERENCE_TIME_KEY: None
-        })
+        time_param.update({GC_START_TIME_KEY: None, GC_END_TIME_KEY: None, GC_REFERENCE_TIME_KEY: None})
 
         start_time = param.get(GC_START_TIME_KEY)
         end_time = param.get(GC_END_TIME_KEY)
@@ -508,10 +507,7 @@ class ChronicleConnector(BaseConnector):
             return action_result.get_status(), time_param
 
         # Updating time period
-        time_param.update({
-            GC_START_TIME_KEY: start_date,
-            GC_END_TIME_KEY: end_date
-        })
+        time_param.update({GC_START_TIME_KEY: start_date, GC_END_TIME_KEY: end_date})
 
         # Flag will be checked for whether reference time will be needed to the caller method or not
         if not flag:
@@ -582,7 +578,7 @@ class ChronicleConnector(BaseConnector):
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR), list of values
         """
         # Extract values by splitting with comma
-        comma_separated_list = [x.strip() for x in comma_separated_int.split(',')]
+        comma_separated_list = [x.strip() for x in comma_separated_int.split(",")]
         comma_separated_list = list(filter(None, comma_separated_list))
 
         # Check for the values that it must specify only minimum and maximum value (means length 2)
@@ -593,9 +589,7 @@ class ChronicleConnector(BaseConnector):
 
         if is_date:
             # Works for comma-separated string date values
-            ret_val, start_date, end_date = self._validate_time_params(action_result,
-                                                                       comma_separated_list[0],
-                                                                       comma_separated_list[1])
+            ret_val, start_date, end_date = self._validate_time_params(action_result, comma_separated_list[0], comma_separated_list[1])
             if phantom.is_fail(ret_val):
                 return action_result.get_status(), None
 
@@ -674,60 +668,50 @@ class ChronicleConnector(BaseConnector):
         susp_int_confidence = config.get("suspicious_int_confidence_score")
         mal_int_confidence = config.get("malicious_int_confidence_score")
 
-        ret_val, self._malicious_category = self._validate_json(action_result,
-                                                                config.get("malicious_category"),
-                                                                GC_CONFIG_MALICIOUS_CATEGORY)
+        ret_val, self._malicious_category = self._validate_json(action_result, config.get("malicious_category"), GC_CONFIG_MALICIOUS_CATEGORY)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("malicious_category")
 
-        ret_val, self._malicious_severity = self._validate_json(action_result,
-                                                                config.get("malicious_severity"),
-                                                                GC_CONFIG_MALICIOUS_SEVERITY)
+        ret_val, self._malicious_severity = self._validate_json(action_result, config.get("malicious_severity"), GC_CONFIG_MALICIOUS_SEVERITY)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("malicious_severity")
 
-        ret_val, self._malicious_str_confidence = self._validate_json(action_result,
-                                                                      config.get("malicious_str_confidence_score"),
-                                                                      GC_CONFIG_MALICIOUS_STR_CONFIDENCE)
+        ret_val, self._malicious_str_confidence = self._validate_json(
+            action_result, config.get("malicious_str_confidence_score"), GC_CONFIG_MALICIOUS_STR_CONFIDENCE
+        )
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("malicious_str_confidence_score")
 
         if mal_int_confidence:
-            ret_val, self._malicious_ic = self._validate_comma_separated(action_result,
-                                                                         mal_int_confidence,
-                                                                         GC_CONFIG_MALICIOUS_INT_CONFIDENCE)
+            ret_val, self._malicious_ic = self._validate_comma_separated(action_result, mal_int_confidence, GC_CONFIG_MALICIOUS_INT_CONFIDENCE)
             if phantom.is_fail(ret_val):
                 self.debug_print(action_result.get_message())
                 error_int_score.append("malicious_int_confidence_score")
 
-        ret_val, self._suspicious_category = self._validate_json(action_result,
-                                                                 config.get("suspicious_category"),
-                                                                 GC_CONFIG_SUSPICIOUS_CATEGORY)
+        ret_val, self._suspicious_category = self._validate_json(action_result, config.get("suspicious_category"), GC_CONFIG_SUSPICIOUS_CATEGORY)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("suspicious_category")
 
-        ret_val, self._suspicious_severity = self._validate_json(action_result,
-                                                                 config.get("suspicious_severity"),
-                                                                 GC_CONFIG_SUSPICIOUS_SEVERITY)
+        ret_val, self._suspicious_severity = self._validate_json(action_result, config.get("suspicious_severity"), GC_CONFIG_SUSPICIOUS_SEVERITY)
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("suspicious_severity")
 
-        ret_val, self._suspicious_str_confidence = self._validate_json(action_result,
-                                                                       config.get("suspicious_str_confidence_score"),
-                                                                       GC_CONFIG_SUSPICIOUS_STR_CONFIDENCE)
+        ret_val, self._suspicious_str_confidence = self._validate_json(
+            action_result, config.get("suspicious_str_confidence_score"), GC_CONFIG_SUSPICIOUS_STR_CONFIDENCE
+        )
         if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             error_msg_list.append("suspicious_str_confidence_score")
 
         if susp_int_confidence:
-            ret_val, self._suspicious_ic = self._validate_comma_separated(action_result,
-                                                                          susp_int_confidence,
-                                                                          GC_CONFIG_SUSPICIOUS_INT_CONFIDENCE)
+            ret_val, self._suspicious_ic = self._validate_comma_separated(
+                action_result, susp_int_confidence, GC_CONFIG_SUSPICIOUS_INT_CONFIDENCE
+            )
             if phantom.is_fail(ret_val):
                 self.debug_print(action_result.get_message())
                 error_int_score.append("suspicious_int_confidence_score")
@@ -759,11 +743,11 @@ class ChronicleConnector(BaseConnector):
         reputation = None
         str_confidence = None
         int_confidence = None
-        confidence_score = source.get("confidenceScore", {}).get("strRawConfidenceScore", '').lower()
+        confidence_score = source.get("confidenceScore", {}).get("strRawConfidenceScore", "").lower()
 
         # Fetch reputation definition details from the source
-        category = source.get("category", '').lower()
-        severity = source.get("rawSeverity", '').lower()
+        category = source.get("category", "").lower()
+        severity = source.get("rawSeverity", "").lower()
         if not confidence_score.isdigit():
             str_confidence = confidence_score
         else:
@@ -795,11 +779,11 @@ class ChronicleConnector(BaseConnector):
         reputation = None
         str_confidence = None
         int_confidence = None
-        confidence_score = source.get("confidenceScore", {}).get("strRawConfidenceScore", '').lower()
+        confidence_score = source.get("confidenceScore", {}).get("strRawConfidenceScore", "").lower()
 
         # Fetch reputation definition details from the source
-        category = source.get("category", '').lower()
-        severity = source.get("rawSeverity", '').lower()
+        category = source.get("category", "").lower()
+        severity = source.get("rawSeverity", "").lower()
         if not confidence_score.isdigit():
             str_confidence = confidence_score
         else:
@@ -884,19 +868,19 @@ class ChronicleConnector(BaseConnector):
         try:
             json_error = json.loads(error)
         except json.decoder.JSONDecodeError:
-            self.debug_print(f'{GC_INVALID_ERROR_RESPONSE_FORMAT} Response - {error}')
+            self.debug_print(f"{GC_INVALID_ERROR_RESPONSE_FORMAT} Response - {error}")
             return GC_INVALID_ERROR_RESPONSE_FORMAT
         except Exception as e:
             return f"{GC_INVALID_ERROR_RESPONSE_FORMAT} Error: {str(e)}"
 
         # Fetch error code
-        error_code = json_error.get('error', {}).get('code')
+        error_code = json_error.get("error", {}).get("code")
 
         if error_code == 403:
-            return f'Error code: {error_code}. Permission denied'
+            return f"Error code: {error_code}. Permission denied"
 
         # Create error message
-        msg = json_error.get('error', {}).get('message', '')
+        msg = json_error.get("error", {}).get("message", "")
         if error_code:
             err_msg = f"Error code: {error_code}. Error message: {msg}"
         else:
@@ -914,7 +898,7 @@ class ChronicleConnector(BaseConnector):
         """
         # Derive events summary
         summary = defaultdict(lambda: 0)
-        for event in response.get('events', []):
+        for event in response.get("events", []):
             if event.get("metadata", {}).get("eventType"):
                 summary[event["metadata"]["eventType"]] += 1
 
@@ -941,9 +925,7 @@ class ChronicleConnector(BaseConnector):
                 affected_assets[key] = list(value)
                 cnt += len(list(value))
 
-            alerts_assets_association_list.append({"alert_name": alert_name,
-                                                   "affected_assets": affected_assets,
-                                                   "asset_count": cnt})
+            alerts_assets_association_list.append({"alert_name": alert_name, "affected_assets": affected_assets, "asset_count": cnt})
         return alerts_assets_association_list
 
     def _generate_alert_users_association(self, alerts_users_association):
@@ -973,10 +955,7 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: asset alerts response with summary
         """
-        alerts_assets_association = defaultdict(lambda: {"hostname": set(),
-                                                         "assetIpAddress": set(),
-                                                         "mac": set(),
-                                                         "productId": set()})
+        alerts_assets_association = defaultdict(lambda: {"hostname": set(), "assetIpAddress": set(), "mac": set(), "productId": set()})
         response_with_summary = dict()
         asset_alerts = list()
 
@@ -1068,8 +1047,8 @@ class ChronicleConnector(BaseConnector):
             :return: response
         """
         # Initialize variables
-        uri = None      # Search URI variable
-        first = True    # Flag to check that response is from the First API call or not
+        uri = None  # Search URI variable
+        first = True  # Flag to check that response is from the First API call or not
         results = list()
 
         fixed_endpoint = endpoint
@@ -1087,15 +1066,15 @@ class ChronicleConnector(BaseConnector):
             if phantom.is_fail(ret_val):
                 return ret_val, None, None
 
-            events = response.get('events')
+            events = response.get("events")
             # Only take search URI from the response of first API call
             if first:
-                uri = response.get('uri', [''])[0]
+                uri = response.get("uri", [""])[0]
 
             if not events:
                 return phantom.APP_SUCCESS, results, uri
 
-            end_time = events[0].get('metadata', {}).get('eventTimestamp')
+            end_time = events[0].get("metadata", {}).get("eventTimestamp")
 
             # Order the fetched events in the latest first order
             events.reverse()
@@ -1128,8 +1107,8 @@ class ChronicleConnector(BaseConnector):
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR), response
         """
         # Fetch action parameters
-        asset_indicator = param['asset_indicator']
-        value = param['value']
+        asset_indicator = param["asset_indicator"]
+        value = param["value"]
 
         # Validate the 'limit' action parameter
         limit = self._validate_integers(action_result, param.get(GC_LIMIT_KEY, GC_DEFAULT_PAGE_SIZE), GC_LIMIT_KEY)
@@ -1161,8 +1140,8 @@ class ChronicleConnector(BaseConnector):
 
         # Response using pagination
         response = dict()
-        response.update({'events': events})
-        response.update({'uri': uri if uri else ""})
+        response.update({"events": events})
+        response.update({"uri": uri if uri else ""})
 
         return ret_val, response
 
@@ -1186,8 +1165,10 @@ class ChronicleConnector(BaseConnector):
             self.save_progress("Test Connectivity Failed")
             return ret_val
 
-        self.save_progress("Note: Test connectivity action will not validate other reputation and on poll related asset configuration "
-                            "parameters for optimum performance. They will only be validated in their respective actions")
+        self.save_progress(
+            "Note: Test connectivity action will not validate other reputation and on poll related asset configuration "
+            "parameters for optimum performance. They will only be validated in their respective actions"
+        )
         self.save_progress("Making REST call to Chronicle for fetching the list of IoCs...")
 
         endpoint = "/v1/ioc/listiocs?start_time=1970-01-01T00:00:00Z&page_size=1"
@@ -1221,8 +1202,8 @@ class ChronicleConnector(BaseConnector):
             return ret_val
 
         # Fetch action parameters
-        artifact_indicator = param['artifact_indicator']
-        value = param['value']
+        artifact_indicator = param["artifact_indicator"]
+        value = param["value"]
 
         # Set request parameters
         if artifact_indicator == "Domain Name":
@@ -1249,7 +1230,7 @@ class ChronicleConnector(BaseConnector):
 
         # Create summary
         summary = action_result.update_summary({})
-        summary['total_sources'] = len(sources) if sources else 0
+        summary["total_sources"] = len(sources) if sources else 0
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -1273,8 +1254,8 @@ class ChronicleConnector(BaseConnector):
             return ret_val
 
         # Fetch action parameters
-        artifact_indicator = param['artifact_indicator']
-        value = param['value']
+        artifact_indicator = param["artifact_indicator"]
+        value = param["value"]
 
         # Validate the 'limit' action parameter
         limit = self._validate_integers(action_result, param.get(GC_LIMIT_KEY, GC_DEFAULT_PAGE_SIZE), GC_LIMIT_KEY)
@@ -1324,7 +1305,7 @@ class ChronicleConnector(BaseConnector):
 
         # Create summary
         summary = action_result.update_summary({})
-        summary['total_assets'] = len(assets) if assets else 0
+        summary["total_assets"] = len(assets) if assets else 0
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -1360,7 +1341,7 @@ class ChronicleConnector(BaseConnector):
 
         # Generate summary for alerts response
         try:
-            if response.get('events', []):
+            if response.get("events", []):
                 response = self._generate_event_summary(response)
         except Exception as e:
             self.debug_print(f"Error occurred while generating events summary. Error: {str(e)}")
@@ -1377,7 +1358,7 @@ class ChronicleConnector(BaseConnector):
 
         # Create summary
         summary = action_result.update_summary({})
-        summary['total_events'] = len(events) if events else 0
+        summary["total_events"] = len(events) if events else 0
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -1456,7 +1437,7 @@ class ChronicleConnector(BaseConnector):
         # Create summary
         iocs_count = len(iocs) if iocs else 0
         summary = action_result.update_summary({})
-        summary['total_iocs'] = iocs_count
+        summary["total_iocs"] = iocs_count
 
         return action_result.set_status(phantom.APP_SUCCESS, f"Total IoCs: {iocs_count}")
 
@@ -1485,7 +1466,7 @@ class ChronicleConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, err)
 
         # Fetch action parameters
-        domain_name = param['domain_name']
+        domain_name = param["domain_name"]
 
         # Set request parameters
         req_param = f"?artifact.domain_name={domain_name}"
@@ -1507,7 +1488,7 @@ class ChronicleConnector(BaseConnector):
 
         # Create summary
         summary = action_result.update_summary({})
-        summary['reputation'] = response.get("reputation", "Unknown")
+        summary["reputation"] = response.get("reputation", "Unknown")
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -1535,7 +1516,7 @@ class ChronicleConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, err)
 
         # Fetch action parameters
-        destination_ip_address = param['destination_ip_address']
+        destination_ip_address = param["destination_ip_address"]
 
         # Set request parameters
         req_param = f"?artifact.destination_ip_address={destination_ip_address}"
@@ -1624,14 +1605,14 @@ class ChronicleConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        alert_type = param.get(GC_ALERT_TYPE_KEY, 'All')
+        alert_type = param.get(GC_ALERT_TYPE_KEY, "All")
 
         # Generate summary for alerts response
         try:
             response_data = dict()
-            if alert_type in GC_ASSET_ALERTS_MODE and response.get('alerts', []):
+            if alert_type in GC_ASSET_ALERTS_MODE and response.get("alerts", []):
                 response_data.update(self._generate_alert_summary(response))
-            if alert_type in GC_USER_ALERTS_MODE and response.get('userAlerts', []):
+            if alert_type in GC_USER_ALERTS_MODE and response.get("userAlerts", []):
                 response_data.update(self._generate_user_alerts_summary(response))
         except Exception as e:
             self.debug_print(f"Error occurred while generating alerts summary. Error: {str(e)}")
@@ -1649,20 +1630,20 @@ class ChronicleConnector(BaseConnector):
 
         asset_alert_count = 0
         for alert in asset_alerts:
-            asset_alert_count += len(alert.get('alertInfos', []))
+            asset_alert_count += len(alert.get("alertInfos", []))
 
         user_alert_count = 0
         for alert in user_alerts:
-            user_alert_count += len(alert.get('alertInfos', []))
+            user_alert_count += len(alert.get("alertInfos", []))
 
         # Create summary
         summary = action_result.update_summary({})
         if alert_type in GC_ASSET_ALERTS_MODE:
-            summary['total_assets_with_alerts'] = len(asset_alerts)
-            summary['total_asset_alerts'] = asset_alert_count
+            summary["total_assets_with_alerts"] = len(asset_alerts)
+            summary["total_asset_alerts"] = asset_alert_count
         if alert_type in GC_USER_ALERTS_MODE:
-            summary['total_users_with_alerts'] = len(user_alerts)
-            summary['total_user_alerts'] = user_alert_count
+            summary["total_users_with_alerts"] = len(user_alerts)
+            summary["total_user_alerts"] = user_alert_count
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -1680,7 +1661,7 @@ class ChronicleConnector(BaseConnector):
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR), response
         """
         fixed_endpoint = endpoint
-        page_token = ''
+        page_token = ""
         results = list()
 
         action_identifier = self.get_action_identifier()
@@ -1704,8 +1685,8 @@ class ChronicleConnector(BaseConnector):
             if limit and len(results) >= limit:
                 return phantom.APP_SUCCESS, results[:limit]
 
-            if response.get('nextPageToken'):
-                page_token = response['nextPageToken']
+            if response.get("nextPageToken"):
+                page_token = response["nextPageToken"]
             else:
                 break
             index += 1
@@ -1724,10 +1705,10 @@ class ChronicleConnector(BaseConnector):
         """
         # Create list rules endpoint
 
-        endpoint = f'{GC_LIST_RULES_ENDPOINT}?pageSize=1000'
+        endpoint = f"{GC_LIST_RULES_ENDPOINT}?pageSize=1000"
 
         # Call Paginator for v2 APIs
-        ret_val, rules = self._paginator_for_v2_apis(action_result, client, endpoint, data_subject='rules', limit=limit)
+        ret_val, rules = self._paginator_for_v2_apis(action_result, client, endpoint, data_subject="rules", limit=limit)
 
         if phantom.is_fail(ret_val):
             return action_result.get_status(), None
@@ -1764,15 +1745,11 @@ class ChronicleConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        action_result.add_data(
-            {
-                "rules": rules
-            }
-        )
+        action_result.add_data({"rules": rules})
 
         # Create summary
         summary = action_result.update_summary({})
-        summary['total_rules'] = len(rules)
+        summary["total_rules"] = len(rules)
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -1793,16 +1770,16 @@ class ChronicleConnector(BaseConnector):
         end_time = time_param[GC_END_TIME_KEY]
 
         # Create list rules endpoint
-        fixed_endpoint = f'{GC_LIST_DETECTIONS_ENDPOINT}?pageSize=1000&detectionStartTime={start_time}&detectionEndTime={end_time}'
+        fixed_endpoint = f"{GC_LIST_DETECTIONS_ENDPOINT}?pageSize=1000&detectionStartTime={start_time}&detectionEndTime={end_time}"
 
-        if alert_state != 'ALL':
-            fixed_endpoint += f'&alert_state={alert_state}'
+        if alert_state != "ALL":
+            fixed_endpoint += f"&alert_state={alert_state}"
 
         detections_data = {
             "detections_summary": list(),
             "detections": list(),
             "invalid_rule_ids": list(),
-            "rule_ids_with_partial_detections": list()
+            "rule_ids_with_partial_detections": list(),
         }
 
         all_invalid_rule_ids = True
@@ -1814,43 +1791,21 @@ class ChronicleConnector(BaseConnector):
             self.save_progress(f"Detections endpoint query for search: {endpoint}")
 
             # Call Paginator for v2 APIs
-            ret_val, detections = self._paginator_for_v2_apis(action_result,
-                                                              client,
-                                                              endpoint,
-                                                              data_subject='detections',
-                                                              limit=limit)
+            ret_val, detections = self._paginator_for_v2_apis(action_result, client, endpoint, data_subject="detections", limit=limit)
 
             if phantom.is_success(ret_val):
                 all_invalid_rule_ids = False
-                detections_data['detections'].extend(detections)
-                detections_data['detections_summary'].append(
-                    {
-                        'rule_id': rule_id,
-                        'detections_count': len(detections)
-                    }
-                )
+                detections_data["detections"].extend(detections)
+                detections_data["detections_summary"].append({"rule_id": rule_id, "detections_count": len(detections)})
                 self.debug_print(f"{alert_state} detections fetched for the {rule_id} rule ID: {len(detections)}")
             elif GC_RATE_LIMIT_EXCEEDED in action_result.get_message():
                 all_invalid_rule_ids = False
-                detections_data['detections'].extend(detections)
-                detections_data['detections_summary'].append(
-                    {
-                        'rule_id': rule_id,
-                        'detections_count': len(detections)
-                    }
-                )
+                detections_data["detections"].extend(detections)
+                detections_data["detections_summary"].append({"rule_id": rule_id, "detections_count": len(detections)})
                 self.debug_print(f"{alert_state} detections fetched for the {rule_id} rule ID: {len(detections)}")
-                detections_data['rule_ids_with_partial_detections'].append(
-                    {
-                        'rule_id': rule_id
-                    }
-                )
+                detections_data["rule_ids_with_partial_detections"].append({"rule_id": rule_id})
             else:
-                detections_data['invalid_rule_ids'].append(
-                    {
-                        'rule_id': rule_id
-                    }
-                )
+                detections_data["invalid_rule_ids"].append({"rule_id": rule_id})
 
         if all_invalid_rule_ids:
             self.debug_print("Provided Rule ID(s) are invalid")
@@ -1891,14 +1846,14 @@ class ChronicleConnector(BaseConnector):
             return action_result.get_status()
 
         # Generate list of Rule IDs from the comma-separated string of rule_ids
-        rule_ids = [rule_id.strip() for rule_id in param[GC_RULE_IDS_KEY].split(',')]
+        rule_ids = [rule_id.strip() for rule_id in param[GC_RULE_IDS_KEY].split(",")]
         rule_ids = set(filter(None, rule_ids))
 
         # Check for the scenario where only commas and|or spaces are provided in the rule_ids
         if not rule_ids:
             return action_result.set_status(phantom.APP_ERROR, GC_INVALID_RULE_IDS_MSG)
 
-        alert_state = param.get(GC_ALERT_STATE_KEY, 'ALL')
+        alert_state = param.get(GC_ALERT_STATE_KEY, "ALL")
 
         # Fetch detections
         ret_val, detections_data = self._fetch_detections(action_result, client, rule_ids, alert_state, time_param, limit)
@@ -1911,7 +1866,7 @@ class ChronicleConnector(BaseConnector):
 
         # Create summary
         summary = action_result.update_summary({})
-        summary['total_detections'] = len(detections_data["detections"])
+        summary["total_detections"] = len(detections_data["detections"])
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -1926,27 +1881,26 @@ class ChronicleConnector(BaseConnector):
         """
         # Fetch alert severity
         if GC_RM_ASSET_ALERTS in self._run_mode:
-            ret_val, self._alerts_severity = self._validate_json(action_result,
-                                                                 config.get("alerts_severity"),
-                                                                 GC_CONFIG_ALERT_SEVERITY)
+            ret_val, self._alerts_severity = self._validate_json(action_result, config.get("alerts_severity"), GC_CONFIG_ALERT_SEVERITY)
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
 
         # Fetch Max artifacts limit for single container
-        self._max_artifacts = self._validate_integers(
-            action_result, config.get("max_artifacts", GC_DEFAULT_PAGE_SIZE), GC_CONFIG_MAX_ARTIFACTS)
+        self._max_artifacts = self._validate_integers(action_result, config.get("max_artifacts", GC_DEFAULT_PAGE_SIZE), GC_CONFIG_MAX_ARTIFACTS)
         if self._max_artifacts is None:
             return action_result.get_status()
 
         # Fetch max results(page size) for the manual/scheduled poll
         if self._is_poll_now:
             self._max_results = self._validate_integers(
-                action_result, config.get("max_results_poll_now", GC_DEFAULT_PAGE_SIZE), GC_CONFIG_MAX_LIMIT_POLL_NOW)
+                action_result, config.get("max_results_poll_now", GC_DEFAULT_PAGE_SIZE), GC_CONFIG_MAX_LIMIT_POLL_NOW
+            )
             if self._max_results is None:
                 return action_result.get_status()
         else:
             self._max_results = self._validate_integers(
-                action_result, config.get("max_results_scheduled_poll", GC_DEFAULT_PAGE_SIZE), GC_CONFIG_MAX_LIMIT_POLL)
+                action_result, config.get("max_results_scheduled_poll", GC_DEFAULT_PAGE_SIZE), GC_CONFIG_MAX_LIMIT_POLL
+            )
             if self._max_results is None:
                 return action_result.get_status()
 
@@ -1969,8 +1923,7 @@ class ChronicleConnector(BaseConnector):
         # Check for given start time is not before 1970-01-01T00:00:00Z
         ret_val = self._check_invalid_since_utc_time(action_result, start_time)
         if phantom.is_fail(ret_val):
-            return action_result.set_status(phantom.APP_ERROR,
-                                            f"{action_result.get_message()} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
+            return action_result.set_status(phantom.APP_ERROR, f"{action_result.get_message()} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
 
         # Taking current UTC time as end time
         end_time = datetime.utcnow()
@@ -2007,8 +1960,7 @@ class ChronicleConnector(BaseConnector):
                     # Given time range value not matched with any of the possible format of date
                     return action_result.set_status(phantom.APP_ERROR, GC_ON_POLL_INVALID_TIME_ERROR), None
             except OverflowError:
-                return action_result.set_status(phantom.APP_ERROR,
-                                                f"{GC_UTC_SINCE_TIME_ERROR} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"{GC_UTC_SINCE_TIME_ERROR} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
             except Exception as e:
                 return action_result.set_status(phantom.APP_ERROR, f"{GC_ON_POLL_INVALID_TIME_ERROR} Error: {str(e)}"), None
 
@@ -2088,14 +2040,10 @@ class ChronicleConnector(BaseConnector):
         # If manual poll check only for given time range and return with calculated time range as per given asset params
         if self._is_poll_now:
             # Fetch time period
-            ret_val, start_time, end_time = self._validate_time_range_poll_now(action_result,
-                                                                               config.get("time_range_poll_now", "3d"))
+            ret_val, start_time, end_time = self._validate_time_range_poll_now(action_result, config.get("time_range_poll_now", "3d"))
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
-            start_time_end_time_to_update = {
-                GC_START_TIME_KEY: start_time,
-                GC_END_TIME_KEY: end_time
-            }
+            start_time_end_time_to_update = {GC_START_TIME_KEY: start_time, GC_END_TIME_KEY: end_time}
             self._time_dict = dict.fromkeys(self._time_dict, start_time_end_time_to_update)
             return phantom.APP_SUCCESS
 
@@ -2103,8 +2051,7 @@ class ChronicleConnector(BaseConnector):
         # Check date format for '<digit><d/h/m/s>' or 'start_time' format for given 'start_time_scheduled_poll' asset config
         # It will return list of start time and end time
         # And this time list will use whenever we have to consider run as first run
-        ret_val, time = self._validate_time_other_format(action_result,
-                                                         config.get("start_time_scheduled_poll", "1970-01-01T00:00:00Z"))
+        ret_val, time = self._validate_time_other_format(action_result, config.get("start_time_scheduled_poll", "1970-01-01T00:00:00Z"))
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()
@@ -2117,7 +2064,7 @@ class ChronicleConnector(BaseConnector):
             "last_run_alert_time",
             "last_run_user_alert_time",
             "last_run_alerting_detection_time",
-            "last_run_not_alerting_detection_time"
+            "last_run_not_alerting_detection_time",
         ]
 
         # Check for first run
@@ -2128,10 +2075,7 @@ class ChronicleConnector(BaseConnector):
             # Set first_run as True
             self._is_first_run = dict.fromkeys(self._is_first_run, True)
             # Set time parameter for the API call
-            start_time_end_time_to_update = {
-                GC_START_TIME_KEY: time[0],
-                GC_END_TIME_KEY: time[1]
-            }
+            start_time_end_time_to_update = {GC_START_TIME_KEY: time[0], GC_END_TIME_KEY: time[1]}
             self._time_dict = dict.fromkeys(self._time_dict, start_time_end_time_to_update)
             return phantom.APP_SUCCESS
 
@@ -2145,24 +2089,10 @@ class ChronicleConnector(BaseConnector):
             if last_run_value:
                 backdate_time = config.get("backdate_time", "15m")
                 start_time = self._check_last_run_context(last_run_value, time[0], backdate_time, run_mode=run_mode)
-                self._time_dict.update(
-                    {
-                        run_mode: {
-                            GC_START_TIME_KEY: start_time,
-                            GC_END_TIME_KEY: time[1]
-                        }
-                    }
-                )
+                self._time_dict.update({run_mode: {GC_START_TIME_KEY: start_time, GC_END_TIME_KEY: time[1]}})
             else:
                 self.debug_print(f"Scheduled run for first time for {run_mode.replace('_', ' ').title()} ingestion run mode")
-                self._time_dict.update(
-                    {
-                        run_mode: {
-                            GC_START_TIME_KEY: time[0],
-                            GC_END_TIME_KEY: time[1]
-                        }
-                    }
-                )
+                self._time_dict.update({run_mode: {GC_START_TIME_KEY: time[0], GC_END_TIME_KEY: time[1]}})
                 if run_mode in self._run_mode:
                     # Set first_run as True
                     self._is_first_run[run_mode] = True
@@ -2186,8 +2116,9 @@ class ChronicleConnector(BaseConnector):
 
         # Checking date format of retrieved date string from the state file
         self.debug_print(f"Check for '{run_mode.replace('_', ' ').title()}s'")
-        self.debug_print(f"Check that string date value {last_run_time} fetched from "
-                         f"the state file is in the correct format {GC_DATE_FORMAT} or not")
+        self.debug_print(
+            f"Check that string date value {last_run_time} fetched from " f"the state file is in the correct format {GC_DATE_FORMAT} or not"
+        )
         # Check for date string format
         check, _ = self._check_date_format(last_run_time)
         if not check:
@@ -2195,8 +2126,9 @@ class ChronicleConnector(BaseConnector):
             first_run = True
             start_time = first_run_time
         else:
-            self.debug_print("Considering the retrieved last_run_time value from the state file "
-                             "as the start_time for the next scheduled/interval poll")
+            self.debug_print(
+                "Considering the retrieved last_run_time value from the state file " "as the start_time for the next scheduled/interval poll"
+            )
             self.debug_print(f"Retrieved start_time for the {run_mode} run mode: {last_run_time}")
             # Next run for the scheduled/interval poll
             start_time = last_run_time
@@ -2258,7 +2190,7 @@ class ChronicleConnector(BaseConnector):
                 "timestamp": alert_info.get("timestamp", ""),
                 "rawLog": alert_info.get("rawLog", ""),
                 "uri": alert_info.get("uri", [""])[0],
-                "udmEvent": alert_info.get("udmEvent")
+                "udmEvent": alert_info.get("udmEvent"),
             }
             # Check if the user_alert was already fetched and ingested in the previous run
             if not self._check_last_run_hash(last_run_user_alert_hash_digest, curr_run_user_alert_hash_digest, user_alert):
@@ -2284,7 +2216,7 @@ class ChronicleConnector(BaseConnector):
             return user_alerts_results
 
         # Fetch user_alerts from the response
-        user_alerts = response.get('userAlerts', [])
+        user_alerts = response.get("userAlerts", [])
         if not user_alerts:
             return user_alerts_results
 
@@ -2295,14 +2227,14 @@ class ChronicleConnector(BaseConnector):
             # Initialize results list
             results = list()
             # Fetch user information
-            user = list(user_alert.get('user', {}).items())
+            user = list(user_alert.get("user", {}).items())
             if not user:
                 # Not received any kind of user details in the user with user_alerts dictionary
                 # Hence marking userIndicator and userValue as empty string
                 user = [("", "")]
             try:
                 # Parse user_alerts infos for particular user
-                results = self._parse_user_alert_info(user_alert.get('alertInfos', []), user)
+                results = self._parse_user_alert_info(user_alert.get("alertInfos", []), user)
             except Exception as e:
                 self.debug_print(f"Exception occurred while parsing user_alerts response. Error: {str(e)}")
                 self.debug_print(f"Ignoring user_alert infos for userIndicator: '{user[0][0]}' and userValue: '{user[0][1]}'")
@@ -2331,9 +2263,8 @@ class ChronicleConnector(BaseConnector):
 
         for alert_info in alert_infos:
             # Ignore alerts which alert has configured severity to ingest
-            if self._alerts_severity and alert_info.get('severity', '').lower() not in self._alerts_severity:
-                self.debug_print(f"Ignored alert: {alert_info.get('name', '')} "
-                                 f"which has severity: {alert_info.get('severity', '')}")
+            if self._alerts_severity and alert_info.get("severity", "").lower() not in self._alerts_severity:
+                self.debug_print(f"Ignored alert: {alert_info.get('name', '')} " f"which has severity: {alert_info.get('severity', '')}")
                 continue
 
             # Create 'cef' type artifact for individual alert by adding corresponding asset infos with alert infos
@@ -2346,7 +2277,7 @@ class ChronicleConnector(BaseConnector):
                 "timestamp": alert_info.get("timestamp", ""),
                 "rawLog": alert_info.get("rawLog", ""),
                 "uri": alert_info.get("uri", [""])[0],
-                "udmEvent": alert_info.get("udmEvent")
+                "udmEvent": alert_info.get("udmEvent"),
             }
 
             # Check if the alert was already fetched and ingested in the previous run
@@ -2373,7 +2304,7 @@ class ChronicleConnector(BaseConnector):
             return alerts_results
 
         # Fetch alerts from the response
-        alerts = response.get('alerts', [])
+        alerts = response.get("alerts", [])
         if not alerts:
             return alerts_results
 
@@ -2384,14 +2315,14 @@ class ChronicleConnector(BaseConnector):
             # Initialize results list
             results = list()
             # Fetch asset information
-            asset = list(alert.get('asset', {}).items())
+            asset = list(alert.get("asset", {}).items())
             if not asset:
                 # Not received any kind of asset details in the asset with alerts dictionary
                 # Hence marking assetIndicator and assetValue as empty string
                 asset = [("", "")]
             try:
                 # Parse alerts infos for particular asset
-                results = self._parse_alert_info(alert.get('alertInfos', []), asset)
+                results = self._parse_alert_info(alert.get("alertInfos", []), asset)
             except Exception as e:
                 self.debug_print(f"Exception occurred while parsing alerts response. Error: {str(e)}")
                 self.debug_print(f"Ignoring alert infos for assetIndicator: '{asset[0][0]}' and assetValue: '{asset[0][1]}'")
@@ -2420,19 +2351,18 @@ class ChronicleConnector(BaseConnector):
         confidence_int = list()
 
         # Parse information from received IoC sources
-        for source in ioc.get('sources', []):
-            sources.append(source.get('source', ''))
-            confidence_str.append(source.get('confidenceScore', {}).get('normalizedConfidenceScore', 'unknown'))
-            confidence_int.append(source.get('confidenceScore', {}).get('intRawConfidenceScore', 0))
-            severity.append(source.get('rawSeverity', ''))
-            category.append(source.get('category', ''))
+        for source in ioc.get("sources", []):
+            sources.append(source.get("source", ""))
+            confidence_str.append(source.get("confidenceScore", {}).get("normalizedConfidenceScore", "unknown"))
+            confidence_int.append(source.get("confidenceScore", {}).get("intRawConfidenceScore", 0))
+            severity.append(source.get("rawSeverity", ""))
+            category.append(source.get("category", ""))
 
         # Convert intRawConfidenceScore to str type from int type
         try:
             confidence_int = list(map(lambda x: str(x), confidence_int))
         except Exception as e:
-            self.debug_print(f"Error occurred while converting intRawConfidenceScore value to 'str' type from 'int' type. "
-                             f"Error: {str(e)}")
+            self.debug_print(f"Error occurred while converting intRawConfidenceScore value to 'str' type from 'int' type. " f"Error: {str(e)}")
             self.debug_print(f"Ignoring intRawConfidenceScore value from all the sources for IoC domain: {artifact[0][1]}")
             # Ignore all the intRawConfidenceScore
             confidence_int = list()
@@ -2446,19 +2376,19 @@ class ChronicleConnector(BaseConnector):
 
         # Create parsed IoC
         parsed_ioc = {
-            'artifactIndicator': artifact[0][0],
-            'artifactValue': artifact[0][1],
-            'sources': ", ".join(sources),
-            'normalizedConfidenceScore': ", ".join(confidence_str),
-            'intRawConfidenceScore': ", ".join(confidence_int),
-            'rawSeverity': ", ".join(severity),
-            'category': ", ".join(category),
-            'iocIngestTime': ioc.get("iocIngestTime", ""),
-            'firstSeenTime': ioc.get("firstSeenTime", ""),
-            'lastSeenTime': ioc.get("lastSeenTime", ""),
-            'uri': ioc.get('uri', [''])[0],
-            'rawJSON': json.dumps(ioc),
-            'data': ioc
+            "artifactIndicator": artifact[0][0],
+            "artifactValue": artifact[0][1],
+            "sources": ", ".join(sources),
+            "normalizedConfidenceScore": ", ".join(confidence_str),
+            "intRawConfidenceScore": ", ".join(confidence_int),
+            "rawSeverity": ", ".join(severity),
+            "category": ", ".join(category),
+            "iocIngestTime": ioc.get("iocIngestTime", ""),
+            "firstSeenTime": ioc.get("firstSeenTime", ""),
+            "lastSeenTime": ioc.get("lastSeenTime", ""),
+            "uri": ioc.get("uri", [""])[0],
+            "rawJSON": json.dumps(ioc),
+            "data": ioc,
         }
 
         return parsed_ioc
@@ -2479,7 +2409,7 @@ class ChronicleConnector(BaseConnector):
             return iocs_results
 
         # Fetch alerts from the response
-        iocs = response.get('response', {}).get('matches', [])
+        iocs = response.get("response", {}).get("matches", [])
         if not iocs:
             return iocs_results
 
@@ -2489,7 +2419,7 @@ class ChronicleConnector(BaseConnector):
             # Initialize result variable
             result = None
             # Fetch asset information
-            artifact = list(ioc.get('artifact', {}).items())
+            artifact = list(ioc.get("artifact", {}).items())
             if not artifact:
                 # Not received any artifact information for IoC domain matches
                 # Hence marking artifactIndicator and artifactValue as empty string
@@ -2504,8 +2434,7 @@ class ChronicleConnector(BaseConnector):
                 result = self._parse_ioc_info(ioc, artifact)
             except Exception as e:
                 self.debug_print(f"Exception occurred while parsing IoCs response. Error: {str(e)}")
-                self.debug_print(f"Ignoring IoC match for artifactIndicator: "
-                                 f"'{artifact[0][0]}' and artifactValue: '{artifact[0][1]}'")
+                self.debug_print(f"Ignoring IoC match for artifactIndicator: " f"'{artifact[0][0]}' and artifactValue: '{artifact[0][1]}'")
 
             # Add alerts into final results
             if result:
@@ -2532,7 +2461,7 @@ class ChronicleConnector(BaseConnector):
                 for ref in refs:
                     event = dict()
                     event.update(ref)
-                    event['label'] = label
+                    event["label"] = label
                     parsed_events.append(event)
         except Exception as e:
             self.debug_print(f"Error occurred while parsing the collectionEvents. Error: {str(e)}")
@@ -2558,27 +2487,27 @@ class ChronicleConnector(BaseConnector):
             return parsed_detections
 
         # Fetch alerts from the response
-        detections = response.get('detections', [])
+        detections = response.get("detections", [])
         if not detections:
             return parsed_detections
 
         self.debug_print(f"Total {run_mode} detections fetched: {len(detections)}")
 
-        invalid_rule_ids = response.get('invalid_rule_ids', [])
-        rule_ids_with_partial_detections = response.get('rule_ids_with_partial_detections', [])
+        invalid_rule_ids = response.get("invalid_rule_ids", [])
+        rule_ids_with_partial_detections = response.get("rule_ids_with_partial_detections", [])
 
         if invalid_rule_ids:
-            invalid_rule_ids_str = list(map(lambda invalid_rule: invalid_rule['rule_id'], invalid_rule_ids))
-            invalid_rule_ids_str = ', '.join(invalid_rule_ids_str)
+            invalid_rule_ids_str = list(map(lambda invalid_rule: invalid_rule["rule_id"], invalid_rule_ids))
+            invalid_rule_ids_str = ", ".join(invalid_rule_ids_str)
             self.debug_print(f"Following Rule ID(s) are not valid:\n{invalid_rule_ids_str}")
             self.debug_print("No detections were fetched for them")
             self.save_progress(f"Following Rule ID(s) are not valid:\n{invalid_rule_ids_str}")
             self.save_progress("No detections were fetched for them")
 
         if rule_ids_with_partial_detections:
-            map_func = lambda rule_ids_with_partial_detection: rule_ids_with_partial_detection['rule_id']
+            map_func = lambda rule_ids_with_partial_detection: rule_ids_with_partial_detection["rule_id"]
             rule_ids_with_partial_detections_str = list(map(map_func, rule_ids_with_partial_detections))
-            rule_ids_with_partial_detections_str = ', '.join(rule_ids_with_partial_detections_str)
+            rule_ids_with_partial_detections_str = ", ".join(rule_ids_with_partial_detections_str)
             self.debug_print(f"Detections maybe missing for the following Rule ID(s):\n{rule_ids_with_partial_detections_str}")
             self.debug_print(GC_RATE_LIMIT_EXCEEDED)
             self.save_progress(f"Detections maybe missing for the following Rule ID(s):\n{rule_ids_with_partial_detections_str}")
@@ -2594,7 +2523,7 @@ class ChronicleConnector(BaseConnector):
             collection_elements = detection_info.get("collectionElements", [])
 
             # Fetch asset information
-            detection_details = detection_info.get('detection', [{}])[0]
+            detection_details = detection_info.get("detection", [{}])[0]
             detection = {
                 "detectionId": detection_info.get("id", ""),
                 "detectionType": detection_info.get("type", GC_DEFAULT_DETECTION_TYPE),
@@ -2607,7 +2536,7 @@ class ChronicleConnector(BaseConnector):
                 "createdTime": detection_info.get("createdTime", ""),
                 "events": self._parse_collection_elements(collection_elements),
                 "uri": detection_details.get("urlBackToProduct", ""),
-                "data": detection_info
+                "data": detection_info,
             }
 
             # Add detections into parsed detections
@@ -2647,7 +2576,7 @@ class ChronicleConnector(BaseConnector):
                 rule_ids = set(map(lambda rule: rule.get("ruleId"), filtered_rules))
             else:
                 # Generate list of Rule IDs from the comma-separated string of rule_ids
-                rule_ids = [rule_id.strip() for rule_id in config.get("rule_ids", "").split(',')]
+                rule_ids = [rule_id.strip() for rule_id in config.get("rule_ids", "").split(",")]
                 rule_ids = set(filter(None, rule_ids))
 
         self.debug_print(f"Total rule ID(s) for which detections will be fetched: {len(rule_ids)}")
@@ -2671,13 +2600,15 @@ class ChronicleConnector(BaseConnector):
         # Initialize results dictionary
         results = dict()
 
-        results.update({
-            GC_RM_IOC_DOMAINS: list(),
-            GC_RM_ASSET_ALERTS: list(),
-            GC_RM_USER_ALERTS: list(),
-            GC_RM_ALERTING_DETECTIONS: list(),
-            GC_RM_NOT_ALERTING_DETECTIONS: list()
-        })
+        results.update(
+            {
+                GC_RM_IOC_DOMAINS: list(),
+                GC_RM_ASSET_ALERTS: list(),
+                GC_RM_USER_ALERTS: list(),
+                GC_RM_ALERTING_DETECTIONS: list(),
+                GC_RM_NOT_ALERTING_DETECTIONS: list(),
+            }
+        )
 
         self._last_run_hash_digests = self._state.get("last_run_hash_digests", dict())
 
@@ -2728,12 +2659,9 @@ class ChronicleConnector(BaseConnector):
         if GC_RM_ALERTING_DETECTIONS in self._run_mode:
             alert_state = "ALERTING"
             time_param = self._time_dict[GC_RM_ALERTING_DETECTIONS]
-            ret_val, response, rule_ids = self._fetch_rules_and_detections(action_result,
-                                                                           client,
-                                                                           rule_ids,
-                                                                           alert_state,
-                                                                           time_param,
-                                                                           self._max_results)
+            ret_val, response, rule_ids = self._fetch_rules_and_detections(
+                action_result, client, rule_ids, alert_state, time_param, self._max_results
+            )
 
         if phantom.is_fail(ret_val):
             return action_result.get_status(), None
@@ -2746,19 +2674,13 @@ class ChronicleConnector(BaseConnector):
         if GC_RM_NOT_ALERTING_DETECTIONS in self._run_mode:
             alert_state = "NOT_ALERTING"
             time_param = self._time_dict[GC_RM_NOT_ALERTING_DETECTIONS]
-            ret_val, response, _ = self._fetch_rules_and_detections(action_result,
-                                                                    client,
-                                                                    rule_ids,
-                                                                    alert_state,
-                                                                    time_param,
-                                                                    self._max_results)
+            ret_val, response, _ = self._fetch_rules_and_detections(action_result, client, rule_ids, alert_state, time_param, self._max_results)
 
         if phantom.is_fail(ret_val):
             return action_result.get_status(), None
 
         # Parse Not-Alerting Detections response
-        results.update({GC_RM_NOT_ALERTING_DETECTIONS: self._parse_detections_response(response,
-                                                                                       run_mode=GC_RM_NOT_ALERTING_DETECTIONS)})
+        results.update({GC_RM_NOT_ALERTING_DETECTIONS: self._parse_detections_response(response, run_mode=GC_RM_NOT_ALERTING_DETECTIONS)})
 
         return phantom.APP_SUCCESS, results
 
@@ -2780,16 +2702,16 @@ class ChronicleConnector(BaseConnector):
             r = requests.get(url, verify=self._verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
         except Exception as e:
             self.debug_print("Error making local rest call: {0}".format(str(e)))
-            self.debug_print('DB QUERY: {}'.format(url))
+            self.debug_print("DB QUERY: {}".format(url))
             return phantom.APP_ERROR, cid, count
 
         try:
             resp_json = r.json()
         except Exception as e:
-            self.debug_print('Exception caught: {0}'.format(str(e)))
+            self.debug_print("Exception caught: {0}".format(str(e)))
             return phantom.APP_ERROR, cid, count
 
-        container = resp_json.get('data', [])
+        container = resp_json.get("data", [])
         if not container:
             self.debug_print("Not having any existing container")
             return phantom.APP_ERROR, cid, count
@@ -2804,8 +2726,8 @@ class ChronicleConnector(BaseConnector):
             self.debug_print(f"Invalid response received while checking for the existing container. Error: {str(e)}")
             return phantom.APP_ERROR, cid, count
 
-        cid = container.get('id')
-        artifact_count = container.get('artifact_count')
+        cid = container.get("id")
+        artifact_count = container.get("artifact_count")
 
         self.debug_print(f"Existing Container ID: {cid}")
         self.debug_print(f"Existing Container artifacts count: {artifact_count}")
@@ -2839,19 +2761,21 @@ class ChronicleConnector(BaseConnector):
 
         for detection in alerting_detections:
             artifact = dict()
-            artifact.update({
-                "name": f"Alerting Detection for Rule: {detection.get('ruleName')}",
-                "label": "Alerting Detection Artifact",
-                "cef_types": {
-                    "ruleId": GC_RULE_ID_CONTAINS,
-                    "versionId": GC_RULE_ID_CONTAINS,
-                    "detectionTime": GC_TIME_VALUE_CONTAINS,
-                    "createdTime": GC_TIME_VALUE_CONTAINS,
-                    "uri": GC_URL_CONTAINS
-                },
-                "data": detection.pop("data"),
-                "source_data_identifier": f"{detection.get('detectionId')}_{detection.get('detectionTime')}"
-            })
+            artifact.update(
+                {
+                    "name": f"Alerting Detection for Rule: {detection.get('ruleName')}",
+                    "label": "Alerting Detection Artifact",
+                    "cef_types": {
+                        "ruleId": GC_RULE_ID_CONTAINS,
+                        "versionId": GC_RULE_ID_CONTAINS,
+                        "detectionTime": GC_TIME_VALUE_CONTAINS,
+                        "createdTime": GC_TIME_VALUE_CONTAINS,
+                        "uri": GC_URL_CONTAINS,
+                    },
+                    "data": detection.pop("data"),
+                    "source_data_identifier": f"{detection.get('detectionId')}_{detection.get('detectionTime')}",
+                }
+            )
 
             # Set run_automation flag
             artifact.update({"run_automation": False})
@@ -2862,19 +2786,21 @@ class ChronicleConnector(BaseConnector):
 
         for detection in not_alerting_detections:
             artifact = dict()
-            artifact.update({
-                "name": f"Not Alerting Detection for Rule: {detection.get('ruleName')}",
-                "label": "Not Alerting Detection Artifact",
-                "cef_types": {
-                    "ruleId": GC_RULE_ID_CONTAINS,
-                    "versionId": GC_RULE_ID_CONTAINS,
-                    "detectionTime": GC_TIME_VALUE_CONTAINS,
-                    "createdTime": GC_TIME_VALUE_CONTAINS,
-                    "uri": GC_URL_CONTAINS
-                },
-                "data": detection.pop("data"),
-                "source_data_identifier": f"{detection.get('detectionId')}_{detection.get('detectionTime')}"
-            })
+            artifact.update(
+                {
+                    "name": f"Not Alerting Detection for Rule: {detection.get('ruleName')}",
+                    "label": "Not Alerting Detection Artifact",
+                    "cef_types": {
+                        "ruleId": GC_RULE_ID_CONTAINS,
+                        "versionId": GC_RULE_ID_CONTAINS,
+                        "detectionTime": GC_TIME_VALUE_CONTAINS,
+                        "createdTime": GC_TIME_VALUE_CONTAINS,
+                        "uri": GC_URL_CONTAINS,
+                    },
+                    "data": detection.pop("data"),
+                    "source_data_identifier": f"{detection.get('detectionId')}_{detection.get('detectionTime')}",
+                }
+            )
 
             # Set run_automation flag
             artifact.update({"run_automation": False})
@@ -2899,16 +2825,15 @@ class ChronicleConnector(BaseConnector):
         for alert in user_alerts:
             artifact = dict()
             # Set contains(cef_types), label and name for the artifact
-            artifact.update({
-                "name": f"{alert.get('alertName')} for user {alert.get('userValue')}",
-                "label": "User Alert Artifact",
-                "cef_types": {
-                    "userValue": GC_USER_VALUE_CONTAINS,
-                    "uri": GC_URL_CONTAINS
-                },
-                "data": alert,
-                "source_data_identifier": f"{alert.get('alertName')}_{alert.get('timestamp')}"
-            })
+            artifact.update(
+                {
+                    "name": f"{alert.get('alertName')} for user {alert.get('userValue')}",
+                    "label": "User Alert Artifact",
+                    "cef_types": {"userValue": GC_USER_VALUE_CONTAINS, "uri": GC_URL_CONTAINS},
+                    "data": alert,
+                    "source_data_identifier": f"{alert.get('alertName')}_{alert.get('timestamp')}",
+                }
+            )
 
             # Set run_automation flag
             artifact.update({"run_automation": False})
@@ -2933,16 +2858,15 @@ class ChronicleConnector(BaseConnector):
         for alert in alerts:
             artifact = dict()
             # Set contains(cef_types), label and name for the artifact
-            artifact.update({
-                "name": f"{alert.get('alertName')} for asset {alert.get('assetValue')}",
-                "label": "Alert Artifact",
-                "cef_types": {
-                    "assetValue": GC_ASSET_VALUE_CONTAINS,
-                    "uri": GC_URL_CONTAINS
-                },
-                "data": alert,
-                "source_data_identifier": f"{alert.get('alertName')}_{alert.get('timestamp')}"
-            })
+            artifact.update(
+                {
+                    "name": f"{alert.get('alertName')} for asset {alert.get('assetValue')}",
+                    "label": "Alert Artifact",
+                    "cef_types": {"assetValue": GC_ASSET_VALUE_CONTAINS, "uri": GC_URL_CONTAINS},
+                    "data": alert,
+                    "source_data_identifier": f"{alert.get('alertName')}_{alert.get('timestamp')}",
+                }
+            )
 
             # Set run_automation flag
             artifact.update({"run_automation": False})
@@ -2968,19 +2892,21 @@ class ChronicleConnector(BaseConnector):
             artifact = dict()
             # Set contains(cef_types), label and name for the artifact
             # NOTE: What a value to be added for the default here for result.get('key', 'default')
-            artifact.update({
-                "name": f"Domain: {ioc.get('artifactValue')}",
-                "label": "IoC Domain Artifact",
-                "cef_types": {
-                    "artifactValue": GC_ARTIFACT_VALUE_CONTAINS,
-                    "iocIngestTime": GC_TIME_VALUE_CONTAINS,
-                    "firstSeenTime": GC_TIME_VALUE_CONTAINS,
-                    "lastSeenTime": GC_TIME_VALUE_CONTAINS,
-                    "uri": GC_URL_CONTAINS
-                },
-                "data": ioc.pop("data", {}),
-                "source_data_identifier": f"{ioc.get('artifactValue')}_{ioc.get('iocIngestTime')}"
-            })
+            artifact.update(
+                {
+                    "name": f"Domain: {ioc.get('artifactValue')}",
+                    "label": "IoC Domain Artifact",
+                    "cef_types": {
+                        "artifactValue": GC_ARTIFACT_VALUE_CONTAINS,
+                        "iocIngestTime": GC_TIME_VALUE_CONTAINS,
+                        "firstSeenTime": GC_TIME_VALUE_CONTAINS,
+                        "lastSeenTime": GC_TIME_VALUE_CONTAINS,
+                        "uri": GC_URL_CONTAINS,
+                    },
+                    "data": ioc.pop("data", {}),
+                    "source_data_identifier": f"{ioc.get('artifactValue')}_{ioc.get('iocIngestTime')}",
+                }
+            )
 
             # Set run_automation flag
             artifact.update({"run_automation": False})
@@ -3005,15 +2931,12 @@ class ChronicleConnector(BaseConnector):
 
         if cid:
             for artifact in artifacts:
-                artifact['container_id'] = cid
+                artifact["container_id"] = cid
             ret_val, message, _ = self.save_artifacts(artifacts)
             self.debug_print(f"save_artifacts returns, value: {ret_val}, reason: {message}")
         else:
             container = dict()
-            container.update({
-                "name": f"{key} {datetime.utcnow().strftime(GC_DATE_FORMAT)}",
-                "artifacts": artifacts
-            })
+            container.update({"name": f"{key} {datetime.utcnow().strftime(GC_DATE_FORMAT)}", "artifacts": artifacts})
             ret_val, message, cid = self.save_container(container)
             self.debug_print(f"save_container (with artifacts) returns, value: {ret_val}, reason: {message}, id: {cid}")
 
@@ -3053,7 +2976,7 @@ class ChronicleConnector(BaseConnector):
             start = count
 
         # Divide artifacts list into chunks which length equals to max_artifacts configured in the asset
-        artifacts = [results[i:i + self._max_artifacts] for i in range(start, len(results), self._max_artifacts)]
+        artifacts = [results[i : i + self._max_artifacts] for i in range(start, len(results), self._max_artifacts)]
 
         for artifacts_list in artifacts:
             ret_val = self._ingest_artifacts(artifacts_list, key)
@@ -3071,8 +2994,7 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
-        self.debug_print(f"Ingesting {len(artifacts)} artifacts for {key} results "
-                         f"into the {'existing' if cid else 'new'} container")
+        self.debug_print(f"Ingesting {len(artifacts)} artifacts for {key} results " f"into the {'existing' if cid else 'new'} container")
         ret_val, message, cid = self._save_ingested(artifacts, key, cid=cid)
 
         if phantom.is_fail(ret_val):
@@ -3132,8 +3054,7 @@ class ChronicleConnector(BaseConnector):
         # Create artifacts from the alerting detections results
         try:
             self.debug_print("Try to create artifacts for the detections")
-            alerting_detections, not_alerting_detections = self._create_detection_artifacts(alerting_detections,
-                                                                                            not_alerting_detections)
+            alerting_detections, not_alerting_detections = self._create_detection_artifacts(alerting_detections, not_alerting_detections)
             self.debug_print(f"Total Alerting detection artifacts created: {len(alerting_detections)}")
             self.debug_print(f"Total Not-alerting detection artifacts created: {len(not_alerting_detections)}")
         except Exception as e:
@@ -3173,9 +3094,7 @@ class ChronicleConnector(BaseConnector):
         # Save artifacts for not alerting detections
         try:
             self.debug_print("Try to ingest artifacts for the not alerting detections")
-            self._save_artifacts(not_alerting_detections,
-                                 run_mode=GC_RM_NOT_ALERTING_DETECTIONS,
-                                 key=GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY)
+            self._save_artifacts(not_alerting_detections, run_mode=GC_RM_NOT_ALERTING_DETECTIONS, key=GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY)
         except Exception as e:
             self.debug_print(f"Error occurred while saving artifacts for not alerting detections. Error: {str(e)}")
 
@@ -3215,7 +3134,7 @@ class ChronicleConnector(BaseConnector):
             GC_RM_ASSET_ALERTS,
             GC_RM_USER_ALERTS,
             GC_RM_ALERTING_DETECTIONS,
-            GC_RM_NOT_ALERTING_DETECTIONS
+            GC_RM_NOT_ALERTING_DETECTIONS,
         ]
 
         # Fetch ingestion run mode
@@ -3326,7 +3245,7 @@ class ChronicleConnector(BaseConnector):
             "list_alerts": self._handle_list_alerts,
             "list_rules": self._handle_list_rules,
             "list_detections": self._handle_list_detections,
-            "on_poll": self._handle_on_poll
+            "on_poll": self._handle_on_poll,
         }
 
         if action in action_mapping.keys():
@@ -3352,9 +3271,7 @@ class ChronicleConnector(BaseConnector):
         self._state = self.load_state()
         if not isinstance(self._state, dict):
             self.debug_print("Reseting the state file with the default format")
-            self._state = {
-                "app_version": self.get_app_json().get('app_version')
-            }
+            self._state = {"app_version": self.get_app_json().get("app_version")}
             return self.set_status(phantom.APP_ERROR, GC_STATE_FILE_CORRUPT_ERROR)
 
         # Get the asset config
@@ -3366,7 +3283,7 @@ class ChronicleConnector(BaseConnector):
             return self.get_status()
 
         # Remove API version from Base URL, e.g., /v1
-        self._base_url = re.sub('/v\\d', '', config[GC_BASE_URL_KEY], count=1)
+        self._base_url = re.sub("/v\\d", "", config[GC_BASE_URL_KEY], count=1)
 
         # Scope for Google Chronicle search API
         ret_val, self._scopes = self._validate_json(self, config[GC_SCOPE_KEY], GC_CONFIG_SCOPE_KEY, is_lower=False)
@@ -3375,13 +3292,15 @@ class ChronicleConnector(BaseConnector):
 
         # Validate the 'wait_timeout_period' config parameter
         self._wait_timeout_period = self._validate_integers(
-            self, config.get(GC_WAIT_TIMEOUT_PERIOD_KEY, GC_DEFAULT_WAIT_TIMEOUT_PERIOD), GC_CONFIG_WAIT_TIMEOUT_PERIOD_KEY)
+            self, config.get(GC_WAIT_TIMEOUT_PERIOD_KEY, GC_DEFAULT_WAIT_TIMEOUT_PERIOD), GC_CONFIG_WAIT_TIMEOUT_PERIOD_KEY
+        )
         if self._wait_timeout_period is None:
             return self.get_status()
 
         # Validate the 'no_of_retries' config parameter
         self._no_of_retries = self._validate_integers(
-            self, config.get(GC_NO_OF_RETRIES_KEY, GC_NUMBER_OF_RETRIES), GC_CONFIG_NO_OF_RETRIES_KEY, True)
+            self, config.get(GC_NO_OF_RETRIES_KEY, GC_NUMBER_OF_RETRIES), GC_CONFIG_NO_OF_RETRIES_KEY, True
+        )
         if self._no_of_retries is None:
             return self.get_status()
 
@@ -3410,10 +3329,10 @@ def main():
 
     argparser = argparse.ArgumentParser()
 
-    argparser.add_argument('input_test_json', help='Input Test JSON file')
-    argparser.add_argument('-u', '--username', help='username', required=False)
-    argparser.add_argument('-p', '--password', help='password', required=False)
-    argparser.add_argument('-v', '--verify', help='verify', required=False, default=False)
+    argparser.add_argument("input_test_json", help="Input Test JSON file")
+    argparser.add_argument("-u", "--username", help="username", required=False)
+    argparser.add_argument("-p", "--password", help="password", required=False)
+    argparser.add_argument("-v", "--verify", help="verify", required=False, default=False)
 
     args = argparser.parse_args()
     session_id = None
@@ -3426,31 +3345,31 @@ def main():
 
         # User specified a username but not a password, so ask
         import getpass
+
         password = getpass.getpass("Password: ")
 
     if username and password:
         try:
-            login_url = ChronicleConnector._get_phantom_base_url() + '/login'
+            login_url = ChronicleConnector._get_phantom_base_url() + "/login"
 
             print("Accessing the Login page")
             r = requests.get(login_url, verify=verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
-            csrftoken = r.cookies['csrftoken']
+            csrftoken = r.cookies["csrftoken"]
 
             data = dict()
-            data['username'] = username
-            data['password'] = password
-            data['csrfmiddlewaretoken'] = csrftoken
+            data["username"] = username
+            data["password"] = password
+            data["csrfmiddlewaretoken"] = csrftoken
 
             headers = dict()
-            headers['Cookie'] = 'csrftoken=' + csrftoken
-            headers['Referer'] = login_url
+            headers["Cookie"] = "csrftoken=" + csrftoken
+            headers["Referer"] = login_url
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post(login_url,  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
-                               verify=verify,
-                               data=data,
-                               headers=headers)
-            session_id = r2.cookies['sessionid']
+            r2 = requests.post(
+                login_url, verify=verify, data=data, headers=headers  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+            )
+            session_id = r2.cookies["sessionid"]
         except Exception as e:
             print("Unable to get session id from the platform. Error: " + str(e))
             sys.exit(1)
@@ -3464,8 +3383,8 @@ def main():
         connector.print_progress_message = True
 
         if session_id is not None:
-            in_json['user_session_token'] = session_id
-            connector._set_csrf_info(csrftoken, headers['Referer'])
+            in_json["user_session_token"] = session_id
+            connector._set_csrf_info(csrftoken, headers["Referer"])
 
         ret_val = connector._handle_action(json.dumps(in_json), None)
         print(json.dumps(json.loads(ret_val), indent=4))
@@ -3473,5 +3392,5 @@ def main():
     sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

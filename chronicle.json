@@ -2947,5 +2947,81 @@
             "output": [],
             "versions": "EQ(*)"
         }
-    ]
+    ],
+    "pip39_dependencies": {
+        "wheel": [
+            {
+                "module": "cachetools",
+                "input_file": "wheels/py3/cachetools-4.1.1-py3-none-any.whl"
+            },
+            {
+                "module": "google_api_core",
+                "input_file": "wheels/py3/google_api_core-2.20.0-py3-none-any.whl"
+            },
+            {
+                "module": "google_api_python_client",
+                "input_file": "wheels/shared/google_api_python_client-2.104.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "google_auth",
+                "input_file": "wheels/shared/google_auth-2.35.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "google_auth_httplib2",
+                "input_file": "wheels/shared/google_auth_httplib2-0.1.1-py2.py3-none-any.whl"
+            },
+            {
+                "module": "google_auth_oauthlib",
+                "input_file": "wheels/shared/google_auth_oauthlib-0.4.1-py2.py3-none-any.whl"
+            },
+            {
+                "module": "googleapis_common_protos",
+                "input_file": "wheels/shared/googleapis_common_protos-1.65.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "httplib2",
+                "input_file": "wheels/py3/httplib2-0.22.0-py3-none-any.whl"
+            },
+            {
+                "module": "oauth2client",
+                "input_file": "wheels/shared/oauth2client-4.1.3-py2.py3-none-any.whl"
+            },
+            {
+                "module": "oauthlib",
+                "input_file": "wheels/py3/oauthlib-3.2.2-py3-none-any.whl"
+            },
+            {
+                "module": "proto_plus",
+                "input_file": "wheels/py3/proto_plus-1.24.0-py3-none-any.whl"
+            },
+            {
+                "module": "protobuf",
+                "input_file": "wheels/py3/protobuf-5.28.2-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+            },
+            {
+                "module": "pyasn1",
+                "input_file": "wheels/shared/pyasn1-0.4.6-py2.py3-none-any.whl"
+            },
+            {
+                "module": "pyasn1_modules",
+                "input_file": "wheels/shared/pyasn1_modules-0.2.8-py2.py3-none-any.whl"
+            },
+            {
+                "module": "pyparsing",
+                "input_file": "wheels/py3/pyparsing-3.1.4-py3-none-any.whl"
+            },
+            {
+                "module": "requests_oauthlib",
+                "input_file": "wheels/shared/requests_oauthlib-2.0.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "rsa",
+                "input_file": "wheels/py3/rsa-4.9-py3-none-any.whl"
+            },
+            {
+                "module": "uritemplate",
+                "input_file": "wheels/shared/uritemplate-4.1.1-py2.py3-none-any.whl"
+            }
+        ]
+    }
 }
