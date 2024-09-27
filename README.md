@@ -6,7 +6,7 @@ Connector Version: 2.2.7
 Product Vendor: Google Cloud  
 Product Name: Chronicle  
 Product Version Supported (regex): ".\*"  
-Minimum Product Version: 5.5.0  
+Minimum Product Version: 6.2.1  
 
 This app enables the end-user to search, analyze, and ingest the enterprise security data stored in the Chronicle using investigative, reputation, and ingestion actions
 
