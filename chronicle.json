@@ -11,11 +11,11 @@
     "product_version_regex": ".*",
     "publisher": "Splunk",
     "license": "Copyright (c) 2020-2024 Splunk Inc.",
-    "app_version": "2.2.8",
-    "utctime_updated": "2024-10-08T12:42:38.000000Z",
+    "app_version": "2.2.9",
+    "utctime_updated": "2024-12-07T12:38:59.000000Z",
     "package_name": "phantom_chronicle",
     "main_module": "chronicle_connector.py",
-    "min_phantom_version": "6.2.1",
+    "min_phantom_version": "6.3.0",
     "fips_compliant": true,
     "latest_tested_versions": [
         "v1.7.1"
@@ -2956,19 +2956,19 @@
             },
             {
                 "module": "google_api_core",
-                "input_file": "wheels/py3/google_api_core-2.20.0-py3-none-any.whl"
+                "input_file": "wheels/py3/google_api_core-2.23.0-py3-none-any.whl"
             },
             {
                 "module": "google_api_python_client",
-                "input_file": "wheels/shared/google_api_python_client-2.104.0-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/google_api_python_client-2.154.0-py2.py3-none-any.whl"
             },
             {
                 "module": "google_auth",
-                "input_file": "wheels/shared/google_auth-2.35.0-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/google_auth-2.36.0-py2.py3-none-any.whl"
             },
             {
                 "module": "google_auth_httplib2",
-                "input_file": "wheels/shared/google_auth_httplib2-0.1.1-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/google_auth_httplib2-0.2.0-py2.py3-none-any.whl"
             },
             {
                 "module": "google_auth_oauthlib",
@@ -2976,7 +2976,7 @@
             },
             {
                 "module": "googleapis_common_protos",
-                "input_file": "wheels/shared/googleapis_common_protos-1.65.0-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/googleapis_common_protos-1.66.0-py2.py3-none-any.whl"
             },
             {
                 "module": "httplib2",
@@ -2992,11 +2992,11 @@
             },
             {
                 "module": "proto_plus",
-                "input_file": "wheels/py3/proto_plus-1.24.0-py3-none-any.whl"
+                "input_file": "wheels/py3/proto_plus-1.25.0-py3-none-any.whl"
             },
             {
                 "module": "protobuf",
-                "input_file": "wheels/py3/protobuf-5.28.2-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+                "input_file": "wheels/py3/protobuf-5.29.1-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
             },
             {
                 "module": "pyasn1",
@@ -3008,7 +3008,7 @@
             },
             {
                 "module": "pyparsing",
-                "input_file": "wheels/py3/pyparsing-3.1.4-py3-none-any.whl"
+                "input_file": "wheels/py3/pyparsing-3.2.0-py3-none-any.whl"
             },
             {
                 "module": "requests_oauthlib",
