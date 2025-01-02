@@ -2,11 +2,11 @@
 # Chronicle
 
 Publisher: Splunk  
-Connector Version: 2.2.8  
+Connector Version: 2.2.9  
 Product Vendor: Google Cloud  
 Product Name: Chronicle  
 Product Version Supported (regex): ".\*"  
-Minimum Product Version: 6.2.1  
+Minimum Product Version: 6.3.0  
 
 This app enables the end-user to search, analyze, and ingest the enterprise security data stored in the Chronicle using investigative, reputation, and ingestion actions
 
@@ -1638,8 +1638,8 @@ configuration parameter.
         -   When an incorrect product ID is given for the asset.
 
 
-### Configuration Variables
-The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a Chronicle asset in SOAR.
+### Configuration variables
+This table lists the configuration variables required to operate Chronicle. These variables are specified when configuring a Chronicle asset in Splunk SOAR.
 
 VARIABLE | REQUIRED | TYPE | DESCRIPTION
 -------- | -------- | ---- | -----------
