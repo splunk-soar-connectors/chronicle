@@ -10,7 +10,7 @@
     "python_version": "3",
     "product_version_regex": ".*",
     "publisher": "Splunk",
-    "license": "Copyright (c) 2020-2024 Splunk Inc.",
+    "license": "Copyright (c) 2020-2025 Splunk Inc.",
     "app_version": "2.2.9",
     "utctime_updated": "2024-12-07T12:38:59.000000Z",
     "package_name": "phantom_chronicle",
@@ -2956,7 +2956,7 @@
             },
             {
                 "module": "google_api_core",
-                "input_file": "wheels/py3/google_api_core-2.23.0-py3-none-any.whl"
+                "input_file": "wheels/py3/google_api_core-2.24.1-py3-none-any.whl"
             },
             {
                 "module": "google_api_python_client",
@@ -2964,7 +2964,7 @@
             },
             {
                 "module": "google_auth",
-                "input_file": "wheels/shared/google_auth-2.36.0-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/google_auth-2.38.0-py2.py3-none-any.whl"
             },
             {
                 "module": "google_auth_httplib2",
@@ -2992,11 +2992,11 @@
             },
             {
                 "module": "proto_plus",
-                "input_file": "wheels/py3/proto_plus-1.25.0-py3-none-any.whl"
+                "input_file": "wheels/py3/proto_plus-1.26.0-py3-none-any.whl"
             },
             {
                 "module": "protobuf",
-                "input_file": "wheels/py3/protobuf-5.29.1-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+                "input_file": "wheels/py3/protobuf-5.29.3-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
             },
             {
                 "module": "pyasn1",
@@ -3008,7 +3008,7 @@
             },
             {
                 "module": "pyparsing",
-                "input_file": "wheels/py3/pyparsing-3.2.0-py3-none-any.whl"
+                "input_file": "wheels/py3/pyparsing-3.2.1-py3-none-any.whl"
             },
             {
                 "module": "requests_oauthlib",
