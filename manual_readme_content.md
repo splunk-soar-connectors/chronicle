@@ -1043,10 +1043,10 @@ configuration parameter.
     'Assets with Alerts'. This artifact will be ingested into the separate container named
     'Assets with Alerts \<creation_timestamp>'.
 
-  - - Sample response of the ListAlerts endpoint which is used to fetch the alerts data:
+    - Sample response of the ListAlerts endpoint which is used to fetch the alerts data:
 
       ```json
-        {
+      {
           "asset": {
             "hostname": "mary-gonzalez-laptop"
           },
@@ -1088,7 +1088,7 @@ configuration parameter.
     Alerts'. This artifact will be ingested into the separate container named User Alerts
     \<creation_timestamp>'.
 
-  - - Sample response of the ListAlerts endpoint which is used to fetch the user alerts data:
+    - Sample response of the ListAlerts endpoint which is used to fetch the user alerts data:
 
       ```json
         {
@@ -1119,7 +1119,7 @@ configuration parameter.
             "sourceProduct": "Office 365",
             "timestamp": "2020-09-07T19:46:44Z",
             "rawLog": "...",
-            "uri": "...",
+            "uri": "..."
           }
           ...
         }
@@ -1131,8 +1131,7 @@ configuration parameter.
     Matches'. This artifact will be ingested into the separate container named 'IoC Domain
     Matches \<creation_timestamp>'.
 
-  - - Sample response of the ListIoCs endpoint which is used to fetch the IoCs data:
-
+    - Sample response of the ListIoCs endpoint which is used to fetch the IoCs data:
       ```json
         {
           "artifact": {
@@ -1155,9 +1154,7 @@ configuration parameter.
           ]
         }
       ```
-
     - Sample 'IoC Domain artifact' which gets created from the received response:
-
       ```json
         {
           ...
@@ -1178,7 +1175,6 @@ configuration parameter.
           ...
         }
       ```
-
       **NOTE -** Here, the category, sources, rawSeverity, normalizedConfidenceScore,
       intRawConfidenceScore keys of the IoC Domain Artifact are the details of IoC sources and
       it has comma-separated string datatype. There are chances to retrieved multiple sources
@@ -1191,14 +1187,14 @@ configuration parameter.
     'Alerting Detections'. This artifact will be ingested into the separate container named
     'Alerting Detections \<creation_timestamp>'.
 
-  - - Sample response of the ListDetections endpoint which is used to fetch the Alerting
+    - Sample response of the ListDetections endpoint which is used to fetch the Alerting
       Detections data:
 
       ```json
         {
-          "type": "RULE_DETECTION"
+          "type": "RULE_DETECTION",
           "detection": [
-            {,
+            {
               "ruleName": "ms_office_to_suspicious_url",
               "urlBackToProduct": "...",
               "uri": ["..."],
@@ -1209,7 +1205,7 @@ configuration parameter.
               "detectionFields": [
                 {
                   "key": "hostname",
-                  "value": "betty-decaro-pc",
+                  "value": "betty-decaro-pc"
                 }
               ],
             }
@@ -1218,7 +1214,7 @@ configuration parameter.
           "id": "de_f3769bfc-7cfc-43c7-bca2-5e9b413c63c2",
           "timeWindow": {
             "startTime": "2020-10-04T17:34:48Z",
-            "endTime": "2020-10-04T17:35:48Z",
+            "endTime": "2020-10-04T17:35:48Z"
           },
           "collectionElements": [...],
           "detectionTime": "2020-10-04T17:35:48Z"
@@ -1240,7 +1236,7 @@ configuration parameter.
             "ruleName": "ms_office_to_suspicious_url",
             "ruleType": "MULTI_EVENT",
             "uri": "...",
-            "versionId": "ru_c25c2673-6551-4156-bf96-e883225feb6c@v_1601246241_474367000",
+            "versionId": "ru_c25c2673-6551-4156-bf96-e883225feb6c@v_1601246241_474367000"
           }
           ...
         }
@@ -1252,14 +1248,13 @@ configuration parameter.
     'Not-alerting Detections'. This artifact will be ingested into the separate container named
     'Alerting Detections \<creation_timestamp>'.
 
-  - - Sample response of the ListDetections endpoint which is used to fetch the Alerting
+    - Sample response of the ListDetections endpoint which is used to fetch the Alerting
       Detections data:
-
       ```json
         {
-          "type": "RULE_DETECTION"
+          "type": "RULE_DETECTION",
           "detection": [
-            {,
+            {
               "ruleName": "ms_office_to_suspicious_url",
               "urlBackToProduct": "...",
               "uri": ["..."],
@@ -1270,7 +1265,7 @@ configuration parameter.
               "detectionFields": [
                 {
                   "key": "hostname",
-                  "value": "betty-decaro-pc",
+                  "value": "betty-decaro-pc"
                 }
               ],
             }
@@ -1279,15 +1274,13 @@ configuration parameter.
           "id": "de_5f498fa7-9db2-4f16-58d1-fe2025c7b457",
           "timeWindow": {
             "startTime": "2020-10-30T16:07:48Z",
-            "endTime": "2020-10-30T16:08:48Z",
+            "endTime": "2020-10-30T16:08:48Z"
           },
           "collectionElements": [...],
           "detectionTime": "2020-10-30T16:08:48Z"
         }
       ```
-
     - Sample 'Not-alerting Detection artifact' which gets created from the received response:
-
       ```json
         {
           ...
@@ -1301,7 +1294,7 @@ configuration parameter.
             "ruleName": "ms_office_to_suspicious_url",
             "ruleType": "MULTI_EVENT",
             "uri": "...",
-            "versionId": "ru_c25c2673-6551-4156-bf96-e883225feb6c@v_1601246241_474367000",
+            "versionId": "ru_c25c2673-6551-4156-bf96-e883225feb6c@v_1601246241_474367000"
           }
           ...
         }
