@@ -29,7 +29,7 @@ from googleapiclient import _auth
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
 
-from chronicle_consts import *  # noqa
+from chronicle_consts import *
 
 
 class ChronicleConnector(BaseConnector):
@@ -39,7 +39,7 @@ class ChronicleConnector(BaseConnector):
     def __init__(self):
         """Initialize global variables."""
         # Call the BaseConnectors init first
-        super(ChronicleConnector, self).__init__()
+        super().__init__()
 
         # State file variable initialization
         self._state = None
@@ -102,9 +102,7 @@ class ChronicleConnector(BaseConnector):
             return phantom.APP_SUCCESS, {}
 
         return (
-            action_result.set_status(
-                phantom.APP_ERROR, f"Status code: {response[0].status}. " "Empty response and no information in the header"
-            ),
+            action_result.set_status(phantom.APP_ERROR, f"Status code: {response[0].status}. Empty response and no information in the header"),
             None,
         )
 
@@ -129,7 +127,7 @@ class ChronicleConnector(BaseConnector):
             split_lines = [x.strip() for x in split_lines if x.strip()]
             error_text = "\n".join(split_lines)
         except Exception as e:
-            self.debug_print(f"Error occurred while processing html response. Error: {str(e)}")
+            self.debug_print(f"Error occurred while processing html response. Error: {e!s}")
             error_text = f"Cannot parse error details. Response: {response[1]}"
 
         message = f"Status Code: {response[0].status}. Cannot parse error details. Data from server:\n{error_text}\n"
@@ -157,7 +155,7 @@ class ChronicleConnector(BaseConnector):
                 # Invalid JSON received
                 return action_result.set_status(phantom.APP_ERROR, GC_INVALID_RESPONSE_FORMAT), None
             except Exception as e:
-                return action_result.set_status(phantom.APP_ERROR, f"{GC_INVALID_RESPONSE_FORMAT} Error: {str(e)}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"{GC_INVALID_RESPONSE_FORMAT} Error: {e!s}"), None
 
         # Parse error message
         err_message = self._parse_error_message(response[1])
@@ -231,7 +229,7 @@ class ChronicleConnector(BaseConnector):
             try:
                 response = client.request(url, method)
             except Exception as e:
-                return action_result.set_status(phantom.APP_ERROR, f"Error connecting to server. Error: {str(e)}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"Error connecting to server. Error: {e!s}"), None
 
             # Check for the response is present or not
             if not response:
@@ -244,7 +242,7 @@ class ChronicleConnector(BaseConnector):
                 self.debug_print(f"Received httplib2 response object: {response[0]}")
                 self.debug_print(f"Received original response: {response[1]}")
             except Exception as e:
-                return action_result.set_status(phantom.APP_ERROR, f"{GC_RESPONSE_ERROR}. Error while checking response. Error: {str(e)}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"{GC_RESPONSE_ERROR}. Error while checking response. Error: {e!s}"), None
 
             # Expectation of response format (<object of httplib2.Response>, JSON response)
             if not isinstance(response[0], httplib2.Response):
@@ -359,7 +357,7 @@ class ChronicleConnector(BaseConnector):
         except OverflowError:
             return action_result.set_status(phantom.APP_ERROR, GC_UTC_SINCE_TIME_ERROR), None, None
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, f"{GC_TIME_RANGE_VALIDATION_MSG} . Error: {str(e)}"), None, None
+            return action_result.set_status(phantom.APP_ERROR, f"{GC_TIME_RANGE_VALIDATION_MSG} . Error: {e!s}"), None, None
 
     def _check_date_format(self, date):
         """Validate the value of time parameter given in the action parameters.
@@ -375,7 +373,7 @@ class ChronicleConnector(BaseConnector):
             # Check for the time is in valid format or not
             time = datetime.strptime(date, GC_DATE_FORMAT)
         except Exception as e:
-            self.debug_print(f"Invalid date string received. Error occurred while checking date format. Error: {str(e)}")
+            self.debug_print(f"Invalid date string received. Error occurred while checking date format. Error: {e!s}")
             return False, None
         return True, time
 
@@ -482,8 +480,8 @@ class ChronicleConnector(BaseConnector):
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR), time parameters dictionary
         """
         # Initialize time parameter dictionary
-        start_date = str()
-        end_date = str()
+        start_date = ""
+        end_date = ""
         time_param = dict()
         time_param.update({GC_START_TIME_KEY: None, GC_END_TIME_KEY: None, GC_REFERENCE_TIME_KEY: None})
 
@@ -556,7 +554,7 @@ class ChronicleConnector(BaseConnector):
                     action_result.set_status(phantom.APP_ERROR, GC_LIMIT_VALIDATION_MSG.format(parameter=key))
                     return None
         except Exception as e:
-            self.debug_print(f"Integer validation failed. Error occurred while validating integer value. Error: {str(e)}")
+            self.debug_print(f"Integer validation failed. Error occurred while validating integer value. Error: {e!s}")
             if allow_zero:
                 error_text = GC_LIMIT_VALIDATION_ALLOW_ZERO_MSG.format(parameter=key)
             else:
@@ -643,7 +641,7 @@ class ChronicleConnector(BaseConnector):
                     if is_lower:
                         value = list(map(lambda x: x.lower(), value))
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, GC_JSON_ERROR.format(key, f"Error : {str(e)}")), None
+            return action_result.set_status(phantom.APP_ERROR, GC_JSON_ERROR.format(key, f"Error : {e!s}")), None
 
         return phantom.APP_SUCCESS, value
 
@@ -656,9 +654,9 @@ class ChronicleConnector(BaseConnector):
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR), error message if created else None
         """
         # Initialize variables
-        error_int = str()
-        error_list = str()
-        error_msg = str()
+        error_int = ""
+        error_list = ""
+        error_msg = ""
         error_msg_list = list()
         error_int_score = list()
 
@@ -846,13 +844,13 @@ class ChronicleConnector(BaseConnector):
         try:
             credentials = service_account.Credentials.from_service_account_info(self._key_dict, scopes=self._scopes)
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, f"Unable to load the key json. Error: {str(e)}"), None
+            return action_result.set_status(phantom.APP_ERROR, f"Unable to load the key json. Error: {e!s}"), None
 
         # Build an HTTP client which can make authorized OAuth requests.
         try:
             http_client = _auth.authorized_http(credentials)
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, f"Unable to create client. Error: {str(e)}"), None
+            return action_result.set_status(phantom.APP_ERROR, f"Unable to create client. Error: {e!s}"), None
 
         return phantom.APP_SUCCESS, http_client
 
@@ -871,7 +869,7 @@ class ChronicleConnector(BaseConnector):
             self.debug_print(f"{GC_INVALID_ERROR_RESPONSE_FORMAT} Response - {error}")
             return GC_INVALID_ERROR_RESPONSE_FORMAT
         except Exception as e:
-            return f"{GC_INVALID_ERROR_RESPONSE_FORMAT} Error: {str(e)}"
+            return f"{GC_INVALID_ERROR_RESPONSE_FORMAT} Error: {e!s}"
 
         # Fetch error code
         error_code = json_error.get("error", {}).get("code")
@@ -1225,7 +1223,7 @@ class ChronicleConnector(BaseConnector):
         try:
             sources = response.get("sources", [])
         except Exception as e:
-            self.debug_print(f"Error occurred while fetching sources from response. Error: {str(e)}")
+            self.debug_print(f"Error occurred while fetching sources from response. Error: {e!s}")
             sources = None
 
         # Create summary
@@ -1300,7 +1298,7 @@ class ChronicleConnector(BaseConnector):
         try:
             assets = response.get("assets", [])
         except Exception as e:
-            self.debug_print(f"Error occurred while fetching assets from the response. Error: {str(e)}")
+            self.debug_print(f"Error occurred while fetching assets from the response. Error: {e!s}")
             assets = None
 
         # Create summary
@@ -1344,7 +1342,7 @@ class ChronicleConnector(BaseConnector):
             if response.get("events", []):
                 response = self._generate_event_summary(response)
         except Exception as e:
-            self.debug_print(f"Error occurred while generating events summary. Error: {str(e)}")
+            self.debug_print(f"Error occurred while generating events summary. Error: {e!s}")
 
         # Add fetched data to action result object
         action_result.add_data(response)
@@ -1353,7 +1351,7 @@ class ChronicleConnector(BaseConnector):
         try:
             events = response.get("events", [])
         except Exception as e:
-            self.debug_print(f"Error occurred while fetching events from the response. Error: {str(e)}")
+            self.debug_print(f"Error occurred while fetching events from the response. Error: {e!s}")
             events = None
 
         # Create summary
@@ -1431,7 +1429,7 @@ class ChronicleConnector(BaseConnector):
         try:
             iocs = response.get("response", {}).get("matches", [])
         except Exception as e:
-            self.debug_print(f"Error occurred while fetching IoC matches from the response. Error: {str(e)}")
+            self.debug_print(f"Error occurred while fetching IoC matches from the response. Error: {e!s}")
             iocs = None
 
         # Create summary
@@ -1615,7 +1613,7 @@ class ChronicleConnector(BaseConnector):
             if alert_type in GC_USER_ALERTS_MODE and response.get("userAlerts", []):
                 response_data.update(self._generate_user_alerts_summary(response))
         except Exception as e:
-            self.debug_print(f"Error occurred while generating alerts summary. Error: {str(e)}")
+            self.debug_print(f"Error occurred while generating alerts summary. Error: {e!s}")
 
         # Add fetched data to action result object
         action_result.add_data(response_data)
@@ -1625,7 +1623,7 @@ class ChronicleConnector(BaseConnector):
             asset_alerts = response_data.get("alerts", [])
             user_alerts = response_data.get("userAlerts", [])
         except Exception as e:
-            self.debug_print(f"Error occurred while fetching alerts from the response. Error: {str(e)}")
+            self.debug_print(f"Error occurred while fetching alerts from the response. Error: {e!s}")
             asset_alerts = []
 
         asset_alert_count = 0
@@ -1962,7 +1960,7 @@ class ChronicleConnector(BaseConnector):
             except OverflowError:
                 return action_result.set_status(phantom.APP_ERROR, f"{GC_UTC_SINCE_TIME_ERROR} {GC_ON_POLL_INVALID_TIME_ERROR}"), None
             except Exception as e:
-                return action_result.set_status(phantom.APP_ERROR, f"{GC_ON_POLL_INVALID_TIME_ERROR} Error: {str(e)}"), None
+                return action_result.set_status(phantom.APP_ERROR, f"{GC_ON_POLL_INVALID_TIME_ERROR} Error: {e!s}"), None
 
         # Derive end time
         ret_val, end_time = self._derive_end_time(action_result, time)
@@ -2012,8 +2010,8 @@ class ChronicleConnector(BaseConnector):
                 start_time = start_time.strftime(GC_DATE_FORMAT)
                 self.debug_print(f"Backdated the start_time to {start_time}")
             except Exception as e:
-                self.debug_print(f"Failed to parse the backdate_time asset configuration parameter. Error: {str(e)}")
-                self.debug_print(f"Skipping backdate_time and using the last_run_time. Error: {str(e)}")
+                self.debug_print(f"Failed to parse the backdate_time asset configuration parameter. Error: {e!s}")
+                self.debug_print(f"Skipping backdate_time and using the last_run_time. Error: {e!s}")
                 return start_time
         return start_time
 
@@ -2117,7 +2115,7 @@ class ChronicleConnector(BaseConnector):
         # Checking date format of retrieved date string from the state file
         self.debug_print(f"Check for '{run_mode.replace('_', ' ').title()}s'")
         self.debug_print(
-            f"Check that string date value {last_run_time} fetched from " f"the state file is in the correct format {GC_DATE_FORMAT} or not"
+            f"Check that string date value {last_run_time} fetched from the state file is in the correct format {GC_DATE_FORMAT} or not"
         )
         # Check for date string format
         check, _ = self._check_date_format(last_run_time)
@@ -2127,7 +2125,7 @@ class ChronicleConnector(BaseConnector):
             start_time = first_run_time
         else:
             self.debug_print(
-                "Considering the retrieved last_run_time value from the state file " "as the start_time for the next scheduled/interval poll"
+                "Considering the retrieved last_run_time value from the state file as the start_time for the next scheduled/interval poll"
             )
             self.debug_print(f"Retrieved start_time for the {run_mode} run mode: {last_run_time}")
             # Next run for the scheduled/interval poll
@@ -2223,7 +2221,6 @@ class ChronicleConnector(BaseConnector):
         self.debug_print(f"Total user alerts fetched: {len(user_alerts)}")
 
         for user_alert in user_alerts:
-
             # Initialize results list
             results = list()
             # Fetch user information
@@ -2236,7 +2233,7 @@ class ChronicleConnector(BaseConnector):
                 # Parse user_alerts infos for particular user
                 results = self._parse_user_alert_info(user_alert.get("alertInfos", []), user)
             except Exception as e:
-                self.debug_print(f"Exception occurred while parsing user_alerts response. Error: {str(e)}")
+                self.debug_print(f"Exception occurred while parsing user_alerts response. Error: {e!s}")
                 self.debug_print(f"Ignoring user_alert infos for userIndicator: '{user[0][0]}' and userValue: '{user[0][1]}'")
 
             # Add user_alerts into final results
@@ -2264,7 +2261,7 @@ class ChronicleConnector(BaseConnector):
         for alert_info in alert_infos:
             # Ignore alerts which alert has configured severity to ingest
             if self._alerts_severity and alert_info.get("severity", "").lower() not in self._alerts_severity:
-                self.debug_print(f"Ignored alert: {alert_info.get('name', '')} " f"which has severity: {alert_info.get('severity', '')}")
+                self.debug_print(f"Ignored alert: {alert_info.get('name', '')} which has severity: {alert_info.get('severity', '')}")
                 continue
 
             # Create 'cef' type artifact for individual alert by adding corresponding asset infos with alert infos
@@ -2311,7 +2308,6 @@ class ChronicleConnector(BaseConnector):
         self.debug_print(f"Total asset alerts fetched: {len(alerts)}")
 
         for alert in alerts:
-
             # Initialize results list
             results = list()
             # Fetch asset information
@@ -2324,7 +2320,7 @@ class ChronicleConnector(BaseConnector):
                 # Parse alerts infos for particular asset
                 results = self._parse_alert_info(alert.get("alertInfos", []), asset)
             except Exception as e:
-                self.debug_print(f"Exception occurred while parsing alerts response. Error: {str(e)}")
+                self.debug_print(f"Exception occurred while parsing alerts response. Error: {e!s}")
                 self.debug_print(f"Ignoring alert infos for assetIndicator: '{asset[0][0]}' and assetValue: '{asset[0][1]}'")
 
             # Add alerts into final results
@@ -2362,7 +2358,7 @@ class ChronicleConnector(BaseConnector):
         try:
             confidence_int = list(map(lambda x: str(x), confidence_int))
         except Exception as e:
-            self.debug_print(f"Error occurred while converting intRawConfidenceScore value to 'str' type from 'int' type. " f"Error: {str(e)}")
+            self.debug_print(f"Error occurred while converting intRawConfidenceScore value to 'str' type from 'int' type. Error: {e!s}")
             self.debug_print(f"Ignoring intRawConfidenceScore value from all the sources for IoC domain: {artifact[0][1]}")
             # Ignore all the intRawConfidenceScore
             confidence_int = list()
@@ -2433,8 +2429,8 @@ class ChronicleConnector(BaseConnector):
                 # Parse IoC information
                 result = self._parse_ioc_info(ioc, artifact)
             except Exception as e:
-                self.debug_print(f"Exception occurred while parsing IoCs response. Error: {str(e)}")
-                self.debug_print(f"Ignoring IoC match for artifactIndicator: " f"'{artifact[0][0]}' and artifactValue: '{artifact[0][1]}'")
+                self.debug_print(f"Exception occurred while parsing IoCs response. Error: {e!s}")
+                self.debug_print(f"Ignoring IoC match for artifactIndicator: '{artifact[0][0]}' and artifactValue: '{artifact[0][1]}'")
 
             # Add alerts into final results
             if result:
@@ -2464,7 +2460,7 @@ class ChronicleConnector(BaseConnector):
                     event["label"] = label
                     parsed_events.append(event)
         except Exception as e:
-            self.debug_print(f"Error occurred while parsing the collectionEvents. Error: {str(e)}")
+            self.debug_print(f"Error occurred while parsing the collectionEvents. Error: {e!s}")
             self.debug_print("Returning the partially parsed events")
             return parsed_events
 
@@ -2701,14 +2697,14 @@ class ChronicleConnector(BaseConnector):
         try:
             r = requests.get(url, verify=self._verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
         except Exception as e:
-            self.debug_print("Error making local rest call: {0}".format(str(e)))
-            self.debug_print("DB QUERY: {}".format(url))
+            self.debug_print(f"Error making local rest call: {e!s}")
+            self.debug_print(f"DB QUERY: {url}")
             return phantom.APP_ERROR, cid, count
 
         try:
             resp_json = r.json()
         except Exception as e:
-            self.debug_print("Exception caught: {0}".format(str(e)))
+            self.debug_print(f"Exception caught: {e!s}")
             return phantom.APP_ERROR, cid, count
 
         container = resp_json.get("data", [])
@@ -2723,7 +2719,7 @@ class ChronicleConnector(BaseConnector):
                 self.debug_print("Invalid response received while checking for the existing container")
                 return phantom.APP_ERROR, cid, count
         except Exception as e:
-            self.debug_print(f"Invalid response received while checking for the existing container. Error: {str(e)}")
+            self.debug_print(f"Invalid response received while checking for the existing container. Error: {e!s}")
             return phantom.APP_ERROR, cid, count
 
         cid = container.get("id")
@@ -2740,7 +2736,7 @@ class ChronicleConnector(BaseConnector):
                 cid = None
                 count = None
         except Exception as e:
-            self.debug_print(f"Error occurred while calculating remaining container space. Error: {str(e)}")
+            self.debug_print(f"Error occurred while calculating remaining container space. Error: {e!s}")
             cid = None
             count = None
 
@@ -2994,7 +2990,7 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
-        self.debug_print(f"Ingesting {len(artifacts)} artifacts for {key} results " f"into the {'existing' if cid else 'new'} container")
+        self.debug_print(f"Ingesting {len(artifacts)} artifacts for {key} results into the {'existing' if cid else 'new'} container")
         ret_val, message, cid = self._save_ingested(artifacts, key, cid=cid)
 
         if phantom.is_fail(ret_val):
@@ -3024,8 +3020,8 @@ class ChronicleConnector(BaseConnector):
             iocs = self._create_ioc_artifacts(iocs)
             self.debug_print(f"Total IoC artifacts created: {len(iocs)}")
         except Exception as e:
-            self.debug_print(f"Error occurred while creating artifacts for IoCs. Error: {str(e)}")
-            self.save_progress(f"Error occurred while creating artifacts for IoCs. Error: {str(e)}")
+            self.debug_print(f"Error occurred while creating artifacts for IoCs. Error: {e!s}")
+            self.save_progress(f"Error occurred while creating artifacts for IoCs. Error: {e!s}")
             # Make iocs as empty list
             iocs = list()
 
@@ -3035,8 +3031,8 @@ class ChronicleConnector(BaseConnector):
             alerts = self._create_alert_artifacts(alerts)
             self.debug_print(f"Total Alert artifacts created: {len(alerts)}")
         except Exception as e:
-            self.debug_print(f"Error occurred while creating artifacts for alerts. Error: {str(e)}")
-            self.save_progress(f"Error occurred while creating artifacts for alerts. Error: {str(e)}")
+            self.debug_print(f"Error occurred while creating artifacts for alerts. Error: {e!s}")
+            self.save_progress(f"Error occurred while creating artifacts for alerts. Error: {e!s}")
             # Make alerts as empty list
             alerts = list()
 
@@ -3046,8 +3042,8 @@ class ChronicleConnector(BaseConnector):
             user_alerts = self._create_user_alert_artifacts(user_alerts)
             self.debug_print(f"Total User Alerts artifacts created: {len(user_alerts)}")
         except Exception as e:
-            self.debug_print(f"Error occurred while creating artifacts for user alerts. Error: {str(e)}")
-            self.save_progress(f"Error occurred while creating artifacts for user alerts. Error: {str(e)}")
+            self.debug_print(f"Error occurred while creating artifacts for user alerts. Error: {e!s}")
+            self.save_progress(f"Error occurred while creating artifacts for user alerts. Error: {e!s}")
             # Make alerts as empty list
             user_alerts = list()
 
@@ -3058,8 +3054,8 @@ class ChronicleConnector(BaseConnector):
             self.debug_print(f"Total Alerting detection artifacts created: {len(alerting_detections)}")
             self.debug_print(f"Total Not-alerting detection artifacts created: {len(not_alerting_detections)}")
         except Exception as e:
-            self.debug_print(f"Error occurred while creating artifacts for detections. Error: {str(e)}")
-            self.save_progress(f"Error occurred while creating artifacts for detections. Error: {str(e)}")
+            self.debug_print(f"Error occurred while creating artifacts for detections. Error: {e!s}")
+            self.save_progress(f"Error occurred while creating artifacts for detections. Error: {e!s}")
             # Make alerts as empty list
             alerts = list()
 
@@ -3068,35 +3064,35 @@ class ChronicleConnector(BaseConnector):
             self.debug_print("Try to ingest artifacts for the IoC domain matches")
             self._save_artifacts(iocs, run_mode=GC_RM_IOC_DOMAINS, key=GC_IOC_RUN_MODE_KEY)
         except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for IoCs. Error: {str(e)}")
+            self.debug_print(f"Error occurred while saving artifacts for IoCs. Error: {e!s}")
 
         # Save artifacts for alerts
         try:
             self.debug_print("Try to ingest artifacts for the alerts")
             self._save_artifacts(alerts, run_mode=GC_RM_ASSET_ALERTS, key=GC_ALERT_RUN_MODE_KEY)
         except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for alerts. Error: {str(e)}")
+            self.debug_print(f"Error occurred while saving artifacts for alerts. Error: {e!s}")
 
         # Save artifacts for user alerts
         try:
             self.debug_print("Try to ingest artifacts for the user alerts")
             self._save_artifacts(user_alerts, run_mode=GC_RM_USER_ALERTS, key=GC_USER_ALERT_RUN_MODE_KEY)
         except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for user alerts. Error: {str(e)}")
+            self.debug_print(f"Error occurred while saving artifacts for user alerts. Error: {e!s}")
 
         # Save artifacts for alerting detections
         try:
             self.debug_print("Try to ingest artifacts for the alerting detections")
             self._save_artifacts(alerting_detections, run_mode=GC_RM_ALERTING_DETECTIONS, key=GC_ALERTING_DETECTION_RUN_MODE_KEY)
         except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for alerting detections. Error: {str(e)}")
+            self.debug_print(f"Error occurred while saving artifacts for alerting detections. Error: {e!s}")
 
         # Save artifacts for not alerting detections
         try:
             self.debug_print("Try to ingest artifacts for the not alerting detections")
             self._save_artifacts(not_alerting_detections, run_mode=GC_RM_NOT_ALERTING_DETECTIONS, key=GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY)
         except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for not alerting detections. Error: {str(e)}")
+            self.debug_print(f"Error occurred while saving artifacts for not alerting detections. Error: {e!s}")
 
         return phantom.APP_SUCCESS
 
@@ -3342,7 +3338,6 @@ def main():
     verify = args.verify
 
     if username is not None and password is None:
-
         # User specified a username but not a password, so ask
         import getpass
 
@@ -3367,7 +3362,10 @@ def main():
 
             print("Logging into Platform to get the session id")
             r2 = requests.post(
-                login_url, verify=verify, data=data, headers=headers  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+                login_url,
+                verify=verify,
+                data=data,
+                headers=headers,  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
             )
             session_id = r2.cookies["sessionid"]
         except Exception as e:
