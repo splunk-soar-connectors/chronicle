@@ -2956,7 +2956,7 @@
             },
             {
                 "module": "google_api_core",
-                "input_file": "wheels/py3/google_api_core-2.24.1-py3-none-any.whl"
+                "input_file": "wheels/py3/google_api_core-2.24.2-py3-none-any.whl"
             },
             {
                 "module": "google_api_python_client",
@@ -2976,7 +2976,7 @@
             },
             {
                 "module": "googleapis_common_protos",
-                "input_file": "wheels/shared/googleapis_common_protos-1.66.0-py2.py3-none-any.whl"
+                "input_file": "wheels/py3/googleapis_common_protos-1.69.2-py3-none-any.whl"
             },
             {
                 "module": "httplib2",
@@ -2992,11 +2992,11 @@
             },
             {
                 "module": "proto_plus",
-                "input_file": "wheels/py3/proto_plus-1.26.0-py3-none-any.whl"
+                "input_file": "wheels/py3/proto_plus-1.26.1-py3-none-any.whl"
             },
             {
                 "module": "protobuf",
-                "input_file": "wheels/py3/protobuf-5.29.3-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+                "input_file": "wheels/py39/protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
             },
             {
                 "module": "pyasn1",
@@ -3008,7 +3008,7 @@
             },
             {
                 "module": "pyparsing",
-                "input_file": "wheels/py3/pyparsing-3.2.1-py3-none-any.whl"
+                "input_file": "wheels/py3/pyparsing-3.2.3-py3-none-any.whl"
             },
             {
                 "module": "requests_oauthlib",
