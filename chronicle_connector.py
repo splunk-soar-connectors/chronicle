@@ -496,11 +496,12 @@ class ChronicleConnector(BaseConnector):
             time_range = "3d"
 
         # Calculate time period based on provided time related parameters
+        ret_val = phantom.APP_SUCCESS
         if time_range:
             ret_val, start_date, end_date = self._validate_time_range(action_result, time_range.lower())
         elif start_time or end_time:
             ret_val, start_date, end_date = self._validate_time_params(action_result, start_time, end_time)
-
+        
         if phantom.is_fail(ret_val):
             return action_result.get_status(), time_param
 
