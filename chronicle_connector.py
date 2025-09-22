@@ -501,7 +501,7 @@ class ChronicleConnector(BaseConnector):
             ret_val, start_date, end_date = self._validate_time_range(action_result, time_range.lower())
         elif start_time or end_time:
             ret_val, start_date, end_date = self._validate_time_params(action_result, start_time, end_time)
-        
+
         if phantom.is_fail(ret_val):
             return action_result.get_status(), time_param
 
