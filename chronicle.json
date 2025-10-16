@@ -2960,7 +2960,7 @@
             },
             {
                 "module": "google_api_python_client",
-                "input_file": "wheels/shared/google_api_python_client-2.154.0-py2.py3-none-any.whl"
+                "input_file": "wheels/py3/google_api_python_client-2.184.0-py3-none-any.whl"
             },
             {
                 "module": "google_auth",
@@ -2972,7 +2972,7 @@
             },
             {
                 "module": "google_auth_oauthlib",
-                "input_file": "wheels/shared/google_auth_oauthlib-0.4.1-py2.py3-none-any.whl"
+                "input_file": "wheels/py3/google_auth_oauthlib-1.2.2-py3-none-any.whl"
             },
             {
                 "module": "googleapis_common_protos",
@@ -2992,7 +2992,7 @@
             },
             {
                 "module": "protobuf",
-                "input_file": "wheels/py39/protobuf-6.32.1-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+                "input_file": "wheels/py39/protobuf-6.33.0-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
             },
             {
                 "module": "pyasn1",
@@ -3032,7 +3032,7 @@
             },
             {
                 "module": "google_api_python_client",
-                "input_file": "wheels/shared/google_api_python_client-2.154.0-py2.py3-none-any.whl"
+                "input_file": "wheels/py3/google_api_python_client-2.184.0-py3-none-any.whl"
             },
             {
                 "module": "google_auth",
@@ -3044,7 +3044,7 @@
             },
             {
                 "module": "google_auth_oauthlib",
-                "input_file": "wheels/shared/google_auth_oauthlib-0.4.1-py2.py3-none-any.whl"
+                "input_file": "wheels/py3/google_auth_oauthlib-1.2.2-py3-none-any.whl"
             },
             {
                 "module": "googleapis_common_protos",
@@ -3064,7 +3064,7 @@
             },
             {
                 "module": "protobuf",
-                "input_file": "wheels/py39/protobuf-6.32.1-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+                "input_file": "wheels/py39/protobuf-6.33.0-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
             },
             {
                 "module": "pyasn1",
