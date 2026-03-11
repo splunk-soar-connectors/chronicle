@@ -1,10 +1,10 @@
 # Chronicle
 
-Publisher: Splunk <br>
+Publisher: Google <br>
 Connector Version: 2.2.9 <br>
 Product Vendor: Google Cloud <br>
 Product Name: Chronicle <br>
-Minimum Product Version: 6.3.0
+Minimum Product Version: 7.0.0
 
 This app enables the end-user to search, analyze, and ingest the enterprise security data stored in the Chronicle using investigative, reputation, and ingestion actions
 
