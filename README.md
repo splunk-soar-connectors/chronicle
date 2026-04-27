@@ -1,10 +1,10 @@
 # Chronicle
 
-Publisher: Splunk \
-Connector Version: 2.2.9 \
-Product Vendor: Google Cloud \
-Product Name: Chronicle \
-Minimum Product Version: 6.3.0
+Publisher: Google <br>
+Connector Version: 2.2.9 <br>
+Product Vendor: Google Cloud <br>
+Product Name: Chronicle <br>
+Minimum Product Version: 7.0.0
 
 This app enables the end-user to search, analyze, and ingest the enterprise security data stored in the Chronicle using investigative, reputation, and ingestion actions
 
@@ -1397,23 +1397,23 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 
 ### Supported Actions
 
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration \
-[list ioc details](#action-list-ioc-details) - Return any threat intelligence associated with the specified artifact \
-[list iocs](#action-list-iocs) - List all of the IoCs discovered within the enterprise within the specified time \
-[list assets](#action-list-assets) - List all of the assets that accessed the specified artifact within the specified time \
-[list events](#action-list-events) - List all of the events discovered within the enterprise on a particular device within the specified time \
-[domain reputation](#action-domain-reputation) - Derive the reputation of the specified domain artifact (The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown') \
-[ip reputation](#action-ip-reputation) - Derive the reputation of the specified destination IP address artifact (The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown') \
-[list alerts](#action-list-alerts) - List all of the security alerts tracked within the enterprise on particular assets and|or users for the specified time \
-[list rules](#action-list-rules) - List the latest versions of the rules created in the Detection Engine within the enterprise \
-[list detections](#action-list-detections) - List all the detections for the specific versions of the given Rule ID(s) \
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration <br>
+[list ioc details](#action-list-ioc-details) - Return any threat intelligence associated with the specified artifact <br>
+[list iocs](#action-list-iocs) - List all of the IoCs discovered within the enterprise within the specified time <br>
+[list assets](#action-list-assets) - List all of the assets that accessed the specified artifact within the specified time <br>
+[list events](#action-list-events) - List all of the events discovered within the enterprise on a particular device within the specified time <br>
+[domain reputation](#action-domain-reputation) - Derive the reputation of the specified domain artifact (The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown') <br>
+[ip reputation](#action-ip-reputation) - Derive the reputation of the specified destination IP address artifact (The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown') <br>
+[list alerts](#action-list-alerts) - List all of the security alerts tracked within the enterprise on particular assets and|or users for the specified time <br>
+[list rules](#action-list-rules) - List the latest versions of the rules created in the Detection Engine within the enterprise <br>
+[list detections](#action-list-detections) - List all the detections for the specific versions of the given Rule ID(s) <br>
 [on poll](#action-on-poll) - Action handler for the on poll ingest functionality
 
 ## action: 'test connectivity'
 
 Validate the asset configuration for connectivity using supplied configuration
 
-Type: **test** \
+Type: **test** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -1428,7 +1428,7 @@ No Output
 
 Return any threat intelligence associated with the specified artifact
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -1464,7 +1464,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 List all of the IoCs discovered within the enterprise within the specified time
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 The action will fetch the list of all of the IoCs discovered within the enterprise within the specified time. If the user receives 'moreDataAvailable' as a true value in the action output datapaths, there might still be more IoCs within the user's Chronicle account. The user can narrow the time range and run the action again to ensure visibility into all possible IoCs. If the user doesn't provide any of the time-related action parameters, the action will perform a search for the last three days. If the user provides [Time Range] and other time-related action parameters, the priority will be given to the [Time Range] action parameter and the search will be performed according to its given value.
@@ -1507,7 +1507,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 List all of the assets that accessed the specified artifact within the specified time
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 If the user doesn't provide any of the time-related action parameters, the action will perform a search for the last three days. If the user provides [Time Range] and other time-related action parameters, the priority will be given to the [Time Range] action parameter and the search will be performed according to its given value.
@@ -1550,7 +1550,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 List all of the events discovered within the enterprise on a particular device within the specified time
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 If the user doesn't provide any of the time-related action parameters, the action will perform a search for the last three days. If the [Reference Time] action parameter is not given, the action will consider start time as reference time. And if the value is given for it, the value will be validated and used in the search request. If the user provides [Time Range] and other time-related action parameters, the priority will be given to the [Time Range] action parameter and the search will be performed according to its given value.
@@ -1609,7 +1609,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Derive the reputation of the specified domain artifact (The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown')
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -1643,7 +1643,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Derive the reputation of the specified destination IP address artifact (The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown')
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -1678,7 +1678,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 List all of the security alerts tracked within the enterprise on particular assets and|or users for the specified time
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 The user can specify the [Alert Type] to fetch. If the user doesn't provide any of the time-related action parameters, the action will perform a search for the last three days. If the user provides [Time Range] and other time-related action parameters, the priority will be given to the [Time Range] action parameter and the search will be performed according to its given value.
@@ -1785,7 +1785,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 List the latest versions of the rules created in the Detection Engine within the enterprise
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 If the user doesn't provide any value in the [Limit] action parameter, then the action will fetch 1000 rules (or less, if there are lesser rules created in the Detection Engine within the enterprise).
@@ -1832,7 +1832,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 List all the detections for the specific versions of the given Rule ID(s)
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 The comma-separated [Rule ID(s)] can be provided with or without versionId appended to each Rule ID. If the user doesn't provide any of the time-related action parameters, the action will perform a search for the last three days. If the user provides [Time Range] and other time-related action parameters, the priority will be given to the [Time Range] action parameter and the search will be performed according to its given value.
@@ -1912,7 +1912,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Action handler for the on poll ingest functionality
 
-Type: **ingest** \
+Type: **ingest** <br>
 Read only: **True**
 
 The action will ingest all of the 3rd party security alerts tracked within the enterprise and domain IoCs matches discovered within the enterprise as per the selected ingestion run mode.
@@ -1934,7 +1934,7 @@ ______________________________________________________________________
 
 Auto-generated Splunk SOAR Connector documentation.
 
-Copyright 2025 Splunk Inc.
+Copyright 2026 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
