@@ -2707,7 +2707,7 @@ class ChronicleConnector(BaseConnector):
         return phantom.APP_SUCCESS, results
 
     def _check_for_existing_container(self, name):
-        """Check for existing container and return container ID and and remaining margin count.
+        """Check the asset-local state for a previously created ingestion container.
 
         Parameters:
             :param name: Name of the container to check
@@ -2718,10 +2718,15 @@ class ChronicleConnector(BaseConnector):
         cid = None
         count = None
 
-        url = f'{self.get_phantom_base_url()}rest/container?_filter_name__contains="{name}"&sort=start_time&order=desc'
+        cid = self._state.get("ingest_container_ids", {}).get(name)
+        if not cid:
+            self.debug_print("No asset-owned existing container is recorded")
+            return phantom.APP_ERROR, None, count
+
+        url = f"{self.get_phantom_base_url()}rest/container/{cid}"
 
         try:
-            r = requests.get(url, verify=self._verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+            r = requests.get(url, verify=self._verify, timeout=30)
         except Exception as e:
             self.debug_print(f"Error making local rest call: {e!s}")
             self.debug_print(f"DB QUERY: {url}")
@@ -2733,20 +2738,13 @@ class ChronicleConnector(BaseConnector):
             self.debug_print(f"Exception caught: {e!s}")
             return phantom.APP_ERROR, cid, count
 
-        container = resp_json.get("data", [])
-        if not container:
-            self.debug_print("Not having any existing container")
-            return phantom.APP_ERROR, cid, count
-
-        # Consider latest container as existing container from the received list of containers
-        try:
-            container = container[0]
-            if not isinstance(container, dict):
-                self.debug_print("Invalid response received while checking for the existing container")
-                return phantom.APP_ERROR, cid, count
-        except Exception as e:
-            self.debug_print(f"Invalid response received while checking for the existing container. Error: {e!s}")
-            return phantom.APP_ERROR, cid, count
+        container = resp_json.get("data", resp_json)
+        if isinstance(container, list):
+            container = container[0] if container else None
+        if not isinstance(container, dict) or container.get("id") != cid or not container.get("name", "").startswith(f"{name} "):
+            self.debug_print("Recorded ingestion container is missing or no longer matches this run mode")
+            self._state.get("ingest_container_ids", {}).pop(name, None)
+            return phantom.APP_ERROR, None, count
 
         cid = container.get("id")
         artifact_count = container.get("artifact_count")
@@ -2759,6 +2757,7 @@ class ChronicleConnector(BaseConnector):
             # Not having space in latest container or exceed a configured limit for artifacts
             if count <= 0:
                 self.debug_print("Not having enough space for the artifacts in the existing container")
+                self._state.get("ingest_container_ids", {}).pop(name, None)
                 cid = None
                 count = None
         except Exception as e:
@@ -2961,6 +2960,8 @@ class ChronicleConnector(BaseConnector):
             container.update({"name": f"{key} {datetime.utcnow().strftime(GC_DATE_FORMAT)}", "artifacts": artifacts})
             ret_val, message, cid = self.save_container(container)
             self.debug_print(f"save_container (with artifacts) returns, value: {ret_val}, reason: {message}, id: {cid}")
+            if phantom.is_success(ret_val) and cid:
+                self._state.setdefault("ingest_container_ids", {})[key] = cid
 
         return ret_val, message, cid
 
