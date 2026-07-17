@@ -116,7 +116,7 @@
               <td>
                 <a class="no-word-wrap"
                    href="javascript:;"
-                   onclick="context_menu(this, [{'contains': ['gc time range'], 'value':'{{ result.param.time_range }}' }], 0, {{ container.id }}, null, false);">
+                   onclick="context_menu(this, [{'contains': ['gc time range'], 'value':'{{ result.param.time_range|escapejs }}' }], 0, {{ container.id }}, null, false);">
                   {{ result.param.time_range }}
                   &nbsp;
                   <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -130,7 +130,7 @@
               <td>
                 <a class="no-word-wrap"
                    href="javascript:;"
-                   onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ result.param.start_time }}' }], 0, {{ container.id }}, null, false);">
+                   onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ result.param.start_time|escapejs }}' }], 0, {{ container.id }}, null, false);">
                   {{ result.param.start_time }}
                   &nbsp;
                   <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -173,7 +173,7 @@
                                 <td>
                                   <a class="no-word-wrap"
                                      href="javascript:;"
-                                     onclick="context_menu(this, [{'contains': ['ip', 'domain', 'md5', 'sha1', 'sha256'], 'value':'{{ value }}' }], 0, {{ container.id }}, null, false);">
+                                     onclick="context_menu(this, [{'contains': ['ip', 'domain', 'md5', 'sha1', 'sha256'], 'value':'{{ value|escapejs }}' }], 0, {{ container.id }}, null, false);">
                                     {{ value }}
                                     &nbsp;
                                     <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -214,7 +214,7 @@
                         <td>
                           <a class="no-word-wrap"
                              href="javascript:;"
-                             onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ match.iocIngestTime }}' }], 0, {{ container.id }}, null, false);">
+                             onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ match.iocIngestTime|escapejs }}' }], 0, {{ container.id }}, null, false);">
                             {{ match.iocIngestTime }}
                             &nbsp;
                             <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -223,7 +223,7 @@
                         <td>
                           <a class="no-word-wrap"
                              href="javascript:;"
-                             onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ match.firstSeenTime }}' }], 0, {{ container.id }}, null, false);">
+                             onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ match.firstSeenTime|escapejs }}' }], 0, {{ container.id }}, null, false);">
                             {{ match.firstSeenTime }}
                             &nbsp;
                             <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -232,7 +232,7 @@
                         <td>
                           <a class="no-word-wrap"
                              href="javascript:;"
-                             onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ match.lastSeenTime }}' }], 0, {{ container.id }}, null, false);">
+                             onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ match.lastSeenTime|escapejs }}' }], 0, {{ container.id }}, null, false);">
                             {{ match.lastSeenTime }}
                             &nbsp;
                             <span class="fa fa-caret-down" style="font-size: smaller;"></span>
