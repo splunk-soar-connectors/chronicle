@@ -103,6 +103,8 @@ GC_CONFIG_TIME_RANGE_POLL_NOW = "'Time range for POLL NOW' asset configuration p
 GC_DEFAULT_WAIT_TIMEOUT_PERIOD = 3
 GC_NUMBER_OF_RETRIES = 3
 GC_DEFAULT_PAGE_SIZE = 10000
+GC_API_PAGE_SIZE = 1000
+GC_PAGINATION_PAGE_SLACK = 10
 
 # Errors
 GC_TECHNICAL_ERROR = "Technical Error while making an API call to Chronicle. Empty response received"

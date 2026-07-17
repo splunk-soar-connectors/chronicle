@@ -1055,8 +1055,10 @@ class ChronicleConnector(BaseConnector):
 
         action_identifier = self.get_action_identifier()
         index = 1
+        effective_limit = limit or GC_DEFAULT_PAGE_SIZE
+        max_pages = max(1, (effective_limit + GC_API_PAGE_SIZE - 1) // GC_API_PAGE_SIZE + GC_PAGINATION_PAGE_SLACK)
 
-        while True:
+        while index <= max_pages:
             endpoint = f"{fixed_endpoint}&end_time={end_time}"
 
             self.debug_print(f"Making {index} REST call for the {action_identifier} action")
@@ -1074,7 +1076,7 @@ class ChronicleConnector(BaseConnector):
             if not events:
                 return phantom.APP_SUCCESS, results, uri
 
-            end_time = events[0].get("metadata", {}).get("eventTimestamp")
+            next_end_time = events[0].get("metadata", {}).get("eventTimestamp")
 
             # Order the fetched events in the latest first order
             events.reverse()
@@ -1082,16 +1084,24 @@ class ChronicleConnector(BaseConnector):
             # Add new fetched events to previous events
             results.extend(events)
 
-            if limit and len(results) >= limit:
-                return phantom.APP_SUCCESS, results[:limit], uri
+            if len(results) >= effective_limit:
+                return phantom.APP_SUCCESS, results[:effective_limit], uri
 
             # Check for next page
-            if not response.get("moreDataAvailable") or not end_time:
+            if not response.get("moreDataAvailable") or not next_end_time:
                 break
+            if next_end_time == end_time:
+                self.debug_print("Stopping events pagination because the cursor did not advance")
+                break
+
+            end_time = next_end_time
 
             # Mark first as False
             first = False
             index += 1
+
+        if index > max_pages:
+            self.debug_print(f"Stopping events pagination after the maximum of {max_pages} pages")
 
         return phantom.APP_SUCCESS, results, uri
 
@@ -1666,8 +1676,10 @@ class ChronicleConnector(BaseConnector):
 
         action_identifier = self.get_action_identifier()
         index = 1
+        effective_limit = limit or GC_DEFAULT_PAGE_SIZE
+        max_pages = max(1, (effective_limit + GC_API_PAGE_SIZE - 1) // GC_API_PAGE_SIZE + GC_PAGINATION_PAGE_SLACK)
 
-        while True:
+        while index <= max_pages:
             endpoint = f"{fixed_endpoint}&pageToken={page_token}"
 
             self.debug_print(f"Making {index} REST call for the {action_identifier} action")
@@ -1682,14 +1694,21 @@ class ChronicleConnector(BaseConnector):
                 return phantom.APP_SUCCESS, results
 
             results.extend(response.get(data_subject, []))
-            if limit and len(results) >= limit:
-                return phantom.APP_SUCCESS, results[:limit]
+            if len(results) >= effective_limit:
+                return phantom.APP_SUCCESS, results[:effective_limit]
 
-            if response.get("nextPageToken"):
-                page_token = response["nextPageToken"]
-            else:
+            next_page_token = response.get("nextPageToken")
+            if not next_page_token:
                 break
+            if next_page_token == page_token:
+                self.debug_print("Stopping pagination because nextPageToken did not advance")
+                break
+
+            page_token = next_page_token
             index += 1
+
+        if index > max_pages:
+            self.debug_print(f"Stopping pagination after the maximum of {max_pages} pages")
 
         return phantom.APP_SUCCESS, results
 
