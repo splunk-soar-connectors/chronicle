@@ -19,6 +19,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 from hashlib import sha256
+from urllib.parse import quote
 
 import httplib2
 import phantom.app as phantom
@@ -1784,7 +1785,12 @@ class ChronicleConnector(BaseConnector):
         all_invalid_rule_ids = True
 
         for rule_id in rule_ids:
-            endpoint = fixed_endpoint.format(rule_id=rule_id)
+            if not isinstance(rule_id, str) or not re.fullmatch(GC_RULE_ID_PATTERN, rule_id):
+                self.debug_print(f"Ignoring invalid Rule ID: {rule_id!r}")
+                detections_data["invalid_rule_ids"].append({"rule_id": rule_id})
+                continue
+
+            endpoint = fixed_endpoint.format(rule_id=quote(rule_id, safe=""))
 
             self.debug_print(f"Detections endpoint query for search: {endpoint}")
             self.save_progress(f"Detections endpoint query for search: {endpoint}")
