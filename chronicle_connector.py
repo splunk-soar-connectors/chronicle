@@ -85,6 +85,8 @@ class ChronicleConnector(BaseConnector):
 
         # Use this dictionary to maintain the hash for the fetched results
         self._last_run_hash_digests = dict()
+        self._pending_hash_digests = defaultdict(list)
+        self._failed_run_modes = set()
         # Ingestion time dictionary initialization
         self._time_dict = dict()
         self._verify = False
@@ -2220,7 +2222,7 @@ class ChronicleConnector(BaseConnector):
             if not self._check_last_run_hash(last_run_user_alert_hash_digest, curr_run_user_alert_hash_digest, user_alert):
                 user_alerts.append(user_alert)
 
-        self._last_run_hash_digests[GC_RM_USER_ALERTS] = curr_run_user_alert_hash_digest
+        self._pending_hash_digests[GC_RM_USER_ALERTS].extend(curr_run_user_alert_hash_digest)
 
         return user_alerts
 
@@ -2307,7 +2309,7 @@ class ChronicleConnector(BaseConnector):
             if not self._check_last_run_hash(last_run_alert_hash_digest, curr_run_alert_hash_digest, alert):
                 alerts.append(alert)
 
-        self._last_run_hash_digests[GC_RM_ASSET_ALERTS] = curr_run_alert_hash_digest
+        self._pending_hash_digests[GC_RM_ASSET_ALERTS].extend(curr_run_alert_hash_digest)
 
         return alerts
 
@@ -2564,7 +2566,7 @@ class ChronicleConnector(BaseConnector):
             # Add detections into parsed detections
             parsed_detections.append(detection)
 
-        self._last_run_hash_digests[run_mode] = curr_run_detections_hash_digest
+        self._pending_hash_digests[run_mode].extend(curr_run_detections_hash_digest)
 
         self.debug_print(f"Total parsed {run_mode} detections after deduplication: {len(parsed_detections)}")
 
@@ -2973,7 +2975,7 @@ class ChronicleConnector(BaseConnector):
             :param run_mode: current run_mode for which artifacts will be saved
             :param key: name of the container in which data will be ingested
         Returns:
-            :return: None
+            :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
         # Initialize
         cid = None
@@ -2982,7 +2984,7 @@ class ChronicleConnector(BaseConnector):
 
         # If not results return
         if not results:
-            return
+            return phantom.APP_SUCCESS
 
         # Check for existing container only if it's a scheduled/interval poll and not first run
         if not (self._is_poll_now or self._is_first_run[run_mode]):
@@ -2994,7 +2996,7 @@ class ChronicleConnector(BaseConnector):
             ret_val = self._ingest_artifacts(results[:count], key, cid=cid)
             if phantom.is_fail(ret_val):
                 self.debug_print("Failed to save ingested artifacts in the existing container")
-                return
+                return phantom.APP_ERROR
             # One part is ingested
             start = count
 
@@ -3005,7 +3007,9 @@ class ChronicleConnector(BaseConnector):
             ret_val = self._ingest_artifacts(artifacts_list, key)
             if phantom.is_fail(ret_val):
                 self.debug_print("Failed to save ingested artifacts in the new container")
-                return
+                return phantom.APP_ERROR
+
+        return phantom.APP_SUCCESS
 
     def _ingest_artifacts(self, artifacts, key, cid=None):
         """Ingest artifacts into the Phantom server.
@@ -3026,7 +3030,7 @@ class ChronicleConnector(BaseConnector):
 
         return phantom.APP_SUCCESS
 
-    def _save_results(self, results):
+    def _save_results(self, action_result, results):
         """Parse results and ingest results into the Phantom server.
 
         Parameters:
@@ -3051,6 +3055,7 @@ class ChronicleConnector(BaseConnector):
             self.save_progress(f"Error occurred while creating artifacts for IoCs. Error: {e!s}")
             # Make iocs as empty list
             iocs = list()
+            self._failed_run_modes.add(GC_RM_IOC_DOMAINS)
 
         # Create artifacts from the alerts results
         try:
@@ -3062,6 +3067,7 @@ class ChronicleConnector(BaseConnector):
             self.save_progress(f"Error occurred while creating artifacts for alerts. Error: {e!s}")
             # Make alerts as empty list
             alerts = list()
+            self._failed_run_modes.add(GC_RM_ASSET_ALERTS)
 
         # Create artifacts from the user alerts results
         try:
@@ -3073,6 +3079,7 @@ class ChronicleConnector(BaseConnector):
             self.save_progress(f"Error occurred while creating artifacts for user alerts. Error: {e!s}")
             # Make alerts as empty list
             user_alerts = list()
+            self._failed_run_modes.add(GC_RM_USER_ALERTS)
 
         # Create artifacts from the alerting detections results
         try:
@@ -3083,43 +3090,32 @@ class ChronicleConnector(BaseConnector):
         except Exception as e:
             self.debug_print(f"Error occurred while creating artifacts for detections. Error: {e!s}")
             self.save_progress(f"Error occurred while creating artifacts for detections. Error: {e!s}")
-            # Make alerts as empty list
-            alerts = list()
+            alerting_detections = list()
+            not_alerting_detections = list()
+            self._failed_run_modes.update({GC_RM_ALERTING_DETECTIONS, GC_RM_NOT_ALERTING_DETECTIONS})
 
-        # Save artifacts for IoCs
-        try:
-            self.debug_print("Try to ingest artifacts for the IoC domain matches")
-            self._save_artifacts(iocs, run_mode=GC_RM_IOC_DOMAINS, key=GC_IOC_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for IoCs. Error: {e!s}")
+        save_operations = (
+            (iocs, GC_RM_IOC_DOMAINS, GC_IOC_RUN_MODE_KEY),
+            (alerts, GC_RM_ASSET_ALERTS, GC_ALERT_RUN_MODE_KEY),
+            (user_alerts, GC_RM_USER_ALERTS, GC_USER_ALERT_RUN_MODE_KEY),
+            (alerting_detections, GC_RM_ALERTING_DETECTIONS, GC_ALERTING_DETECTION_RUN_MODE_KEY),
+            (not_alerting_detections, GC_RM_NOT_ALERTING_DETECTIONS, GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY),
+        )
+        for artifacts, run_mode, key in save_operations:
+            if run_mode not in self._run_mode or run_mode in self._failed_run_modes:
+                continue
+            try:
+                self.debug_print(f"Try to ingest artifacts for {key}")
+                ret_val = self._save_artifacts(artifacts, run_mode=run_mode, key=key)
+                if phantom.is_fail(ret_val):
+                    self._failed_run_modes.add(run_mode)
+            except Exception as e:
+                self.debug_print(f"Error occurred while saving artifacts for {key}. Error: {e!s}")
+                self._failed_run_modes.add(run_mode)
 
-        # Save artifacts for alerts
-        try:
-            self.debug_print("Try to ingest artifacts for the alerts")
-            self._save_artifacts(alerts, run_mode=GC_RM_ASSET_ALERTS, key=GC_ALERT_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for alerts. Error: {e!s}")
-
-        # Save artifacts for user alerts
-        try:
-            self.debug_print("Try to ingest artifacts for the user alerts")
-            self._save_artifacts(user_alerts, run_mode=GC_RM_USER_ALERTS, key=GC_USER_ALERT_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for user alerts. Error: {e!s}")
-
-        # Save artifacts for alerting detections
-        try:
-            self.debug_print("Try to ingest artifacts for the alerting detections")
-            self._save_artifacts(alerting_detections, run_mode=GC_RM_ALERTING_DETECTIONS, key=GC_ALERTING_DETECTION_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for alerting detections. Error: {e!s}")
-
-        # Save artifacts for not alerting detections
-        try:
-            self.debug_print("Try to ingest artifacts for the not alerting detections")
-            self._save_artifacts(not_alerting_detections, run_mode=GC_RM_NOT_ALERTING_DETECTIONS, key=GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for not alerting detections. Error: {e!s}")
+        if self._failed_run_modes:
+            failed_modes = ", ".join(sorted(self._failed_run_modes))
+            return action_result.set_status(phantom.APP_ERROR, f"Failed to ingest all results for run mode(s): {failed_modes}")
 
         return phantom.APP_SUCCESS
 
@@ -3129,6 +3125,10 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
+        for run_mode, hashes in self._pending_hash_digests.items():
+            if run_mode not in self._failed_run_modes:
+                self._last_run_hash_digests[run_mode] = hashes
+
         # Updating the last run hash digest for scheduled/interval or manual polling
         self._state["last_run_hash_digests"] = self._last_run_hash_digests
 
@@ -3138,7 +3138,8 @@ class ChronicleConnector(BaseConnector):
 
         # As end_alert_time has current time, we are saving current time as last run time for both alert and IoCs.
         for run_mode in self._run_mode:
-            self._state[f"last_run_{run_mode}_time"] = self._time_dict.get(run_mode, {}).get(GC_END_TIME_KEY)
+            if run_mode not in self._failed_run_modes:
+                self._state[f"last_run_{run_mode}_time"] = self._time_dict.get(run_mode, {}).get(GC_END_TIME_KEY)
 
         return phantom.APP_SUCCESS
 
@@ -3159,6 +3160,9 @@ class ChronicleConnector(BaseConnector):
             GC_RM_ALERTING_DETECTIONS,
             GC_RM_NOT_ALERTING_DETECTIONS,
         ]
+
+        self._pending_hash_digests = defaultdict(list)
+        self._failed_run_modes = set()
 
         # Fetch ingestion run mode
         self._run_mode = GC_RM_ON_POLL_DICT.get(config.get("run_mode", "All"), DEFAULT_ALL_MODE_LIST)
@@ -3193,16 +3197,17 @@ class ChronicleConnector(BaseConnector):
         # Parse results as per the given ingestion run mode
         self.debug_print("Ingest results as per the given ingestion run mode")
         self.save_progress("Ingest results as per the given ingestion run mode")
-        ret_val = self._save_results(results)
+        ret_val = self._save_results(action_result, results)
+
+        # Save state as per the configured ingestion run mode
+        state_ret_val = self._save_state()
+        if phantom.is_fail(state_ret_val):
+            self.debug_print("Failed to save the last run state as per the given ingestion run mode")
+            return action_result.get_status()
+
         if phantom.is_fail(ret_val):
             self.debug_print("Failed to ingest the results as per the given ingestion run mode")
             self.save_progress("Failed to ingest the results as per the given ingestion run mode")
-            return action_result.get_status()
-
-        # Save state as per the configured ingestion run mode
-        ret_val = self._save_state()
-        if phantom.is_fail(ret_val):
-            self.debug_print("Failed to save the last run state as per the given ingestion run mode")
             return action_result.get_status()
 
         # Return success

@@ -6,3 +6,4 @@
 * Validated and encoded Rule IDs before using them in Chronicle API paths (PSAAS-31072)
 * Bounded pagination and stopped when upstream cursors do not advance (PSAAS-32036, PSAAS-32084)
 * Reused only ingestion containers recorded in the current asset's state (PSAAS-32005)
+* Preserved poll checkpoints and deduplication state when result ingestion fails (PSAAS-32349)
