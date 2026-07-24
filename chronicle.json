@@ -3056,7 +3056,7 @@
             },
             {
                 "module": "google_api_core",
-                "input_file": "wheels/py3/google_api_core-2.32.0-py3-none-any.whl"
+                "input_file": "wheels/py3/google_api_core-2.33.0-py3-none-any.whl"
             },
             {
                 "module": "google_api_python_client",
@@ -3064,7 +3064,7 @@
             },
             {
                 "module": "google_auth",
-                "input_file": "wheels/py3/google_auth-2.56.0-py3-none-any.whl"
+                "input_file": "wheels/py3/google_auth-2.56.2-py3-none-any.whl"
             },
             {
                 "module": "google_auth_httplib2",
@@ -3092,7 +3092,7 @@
             },
             {
                 "module": "proto_plus",
-                "input_file": "wheels/py3/proto_plus-1.28.1-py3-none-any.whl"
+                "input_file": "wheels/py3/proto_plus-1.28.2-py3-none-any.whl"
             },
             {
                 "module": "protobuf",
