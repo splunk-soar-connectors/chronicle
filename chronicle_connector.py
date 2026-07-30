@@ -3125,6 +3125,17 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
+        if not isinstance(self._state.get("ingest_container_ids"), dict):
+            self._state["ingest_container_ids"] = {}
+        else:
+            # Keep one latest container id per fixed ingestion run-mode label. This
+            # state is bounded by GC_RM_ON_POLL_DICT and does not grow per container.
+            self._state["ingest_container_ids"] = {
+                key: value
+                for key, value in self._state["ingest_container_ids"].items()
+                if key in GC_RM_ON_POLL_DICT and value
+            }
+
         for run_mode, hashes in self._pending_hash_digests.items():
             if run_mode not in self._failed_run_modes:
                 self._last_run_hash_digests[run_mode] = hashes

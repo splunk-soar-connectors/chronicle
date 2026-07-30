@@ -26,7 +26,13 @@ GC_LIST_DETECTIONS_ENDPOINT = "/v2/detect/rules/{rule_id}/detections"
 
 # Regex pattern
 GC_TIME_RANGE_PATTERN = r"^[1-9]\d*(d|h|m|s)$"
-GC_RULE_ID_PATTERN = r"^[A-Za-z0-9_.@-]+$"
+# Google SecOps Detection Engine documents rule identifiers as ru_{UUID}, with
+# optional version suffixes of @v_{int64}_{int64} or @- for all rule versions:
+# https://cloud.google.com/chronicle/docs/reference/detection-engine-api#listdetections
+GC_RULE_ID_PATTERN = (
+    r"^ru_[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-"
+    r"[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}(@(v_\d+_\d+|-))?$"
+)
 GC_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 # Ingestion run mode constants
