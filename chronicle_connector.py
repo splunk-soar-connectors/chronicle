@@ -3131,9 +3131,7 @@ class ChronicleConnector(BaseConnector):
             # Keep one latest container id per fixed ingestion run-mode label. This
             # state is bounded by GC_RM_ON_POLL_DICT and does not grow per container.
             self._state["ingest_container_ids"] = {
-                key: value
-                for key, value in self._state["ingest_container_ids"].items()
-                if key in GC_RM_ON_POLL_DICT and value
+                key: value for key, value in self._state["ingest_container_ids"].items() if key in GC_RM_ON_POLL_DICT and value
             }
 
         for run_mode, hashes in self._pending_hash_digests.items():
