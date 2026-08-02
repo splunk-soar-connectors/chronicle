@@ -2654,8 +2654,8 @@ class ChronicleConnector(BaseConnector):
 
         # Fetch user_alerts data
         if GC_RM_USER_ALERTS in self._run_mode:
-            start_time = self._time_dict[GC_RM_ASSET_ALERTS][GC_START_TIME_KEY]
-            end_time = self._time_dict[GC_RM_ASSET_ALERTS][GC_END_TIME_KEY]
+            start_time = self._time_dict[GC_RM_USER_ALERTS][GC_START_TIME_KEY]
+            end_time = self._time_dict[GC_RM_USER_ALERTS][GC_END_TIME_KEY]
             ret_val, response = self._fetch_alerts(action_result, client, start_time, end_time, self._max_results)
 
         if phantom.is_fail(ret_val):
