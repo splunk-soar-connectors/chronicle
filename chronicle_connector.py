@@ -1710,7 +1710,10 @@ class ChronicleConnector(BaseConnector):
             index += 1
 
         if index > max_pages:
-            self.debug_print(f"Stopping pagination after the maximum of {max_pages} pages")
+            return (
+                action_result.set_status(phantom.APP_ERROR, f"Stopped pagination after the maximum of {max_pages} pages"),
+                results,
+            )
 
         return phantom.APP_SUCCESS, results
 
