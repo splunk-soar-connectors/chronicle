@@ -1,7 +1,7 @@
 # Chronicle
 
 Publisher: Splunk <br>
-Connector Version: 2.2.9 <br>
+Connector Version: 2.2.10 <br>
 Product Vendor: Google Cloud <br>
 Product Name: Chronicle <br>
 Minimum Product Version: 6.3.0
