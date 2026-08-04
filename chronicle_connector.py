@@ -1,5 +1,5 @@
 # File: chronicle_connector.py
-# Copyright (c) 2020-2025 Splunk Inc.
+# Copyright (c) 2020-2026 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 from hashlib import sha256
+from urllib.parse import quote
 
 import httplib2
 import phantom.app as phantom
@@ -84,6 +85,8 @@ class ChronicleConnector(BaseConnector):
 
         # Use this dictionary to maintain the hash for the fetched results
         self._last_run_hash_digests = dict()
+        self._pending_hash_digests = defaultdict(list)
+        self._failed_run_modes = set()
         # Ingestion time dictionary initialization
         self._time_dict = dict()
         self._verify = False
@@ -1054,8 +1057,10 @@ class ChronicleConnector(BaseConnector):
 
         action_identifier = self.get_action_identifier()
         index = 1
+        effective_limit = limit or GC_DEFAULT_PAGE_SIZE
+        max_pages = max(1, (effective_limit + GC_API_PAGE_SIZE - 1) // GC_API_PAGE_SIZE + GC_PAGINATION_PAGE_SLACK)
 
-        while True:
+        while index <= max_pages:
             endpoint = f"{fixed_endpoint}&end_time={end_time}"
 
             self.debug_print(f"Making {index} REST call for the {action_identifier} action")
@@ -1073,7 +1078,7 @@ class ChronicleConnector(BaseConnector):
             if not events:
                 return phantom.APP_SUCCESS, results, uri
 
-            end_time = events[0].get("metadata", {}).get("eventTimestamp")
+            next_end_time = events[0].get("metadata", {}).get("eventTimestamp")
 
             # Order the fetched events in the latest first order
             events.reverse()
@@ -1081,16 +1086,24 @@ class ChronicleConnector(BaseConnector):
             # Add new fetched events to previous events
             results.extend(events)
 
-            if limit and len(results) >= limit:
-                return phantom.APP_SUCCESS, results[:limit], uri
+            if len(results) >= effective_limit:
+                return phantom.APP_SUCCESS, results[:effective_limit], uri
 
             # Check for next page
-            if not response.get("moreDataAvailable") or not end_time:
+            if not response.get("moreDataAvailable") or not next_end_time:
                 break
+            if next_end_time == end_time:
+                self.debug_print("Stopping events pagination because the cursor did not advance")
+                break
+
+            end_time = next_end_time
 
             # Mark first as False
             first = False
             index += 1
+
+        if index > max_pages:
+            self.debug_print(f"Stopping events pagination after the maximum of {max_pages} pages")
 
         return phantom.APP_SUCCESS, results, uri
 
@@ -1665,8 +1678,10 @@ class ChronicleConnector(BaseConnector):
 
         action_identifier = self.get_action_identifier()
         index = 1
+        effective_limit = limit or GC_DEFAULT_PAGE_SIZE
+        max_pages = max(1, (effective_limit + GC_API_PAGE_SIZE - 1) // GC_API_PAGE_SIZE + GC_PAGINATION_PAGE_SLACK)
 
-        while True:
+        while index <= max_pages:
             endpoint = f"{fixed_endpoint}&pageToken={page_token}"
 
             self.debug_print(f"Making {index} REST call for the {action_identifier} action")
@@ -1681,14 +1696,24 @@ class ChronicleConnector(BaseConnector):
                 return phantom.APP_SUCCESS, results
 
             results.extend(response.get(data_subject, []))
-            if limit and len(results) >= limit:
-                return phantom.APP_SUCCESS, results[:limit]
+            if len(results) >= effective_limit:
+                return phantom.APP_SUCCESS, results[:effective_limit]
 
-            if response.get("nextPageToken"):
-                page_token = response["nextPageToken"]
-            else:
+            next_page_token = response.get("nextPageToken")
+            if not next_page_token:
                 break
+            if next_page_token == page_token:
+                self.debug_print("Stopping pagination because nextPageToken did not advance")
+                break
+
+            page_token = next_page_token
             index += 1
+
+        if index > max_pages:
+            return (
+                action_result.set_status(phantom.APP_ERROR, f"Stopped pagination after the maximum of {max_pages} pages"),
+                results,
+            )
 
         return phantom.APP_SUCCESS, results
 
@@ -1784,7 +1809,12 @@ class ChronicleConnector(BaseConnector):
         all_invalid_rule_ids = True
 
         for rule_id in rule_ids:
-            endpoint = fixed_endpoint.format(rule_id=rule_id)
+            if not isinstance(rule_id, str) or not re.fullmatch(GC_RULE_ID_PATTERN, rule_id):
+                self.debug_print(f"Ignoring invalid Rule ID: {rule_id!r}")
+                detections_data["invalid_rule_ids"].append({"rule_id": rule_id})
+                continue
+
+            endpoint = fixed_endpoint.format(rule_id=quote(rule_id, safe=""))
 
             self.debug_print(f"Detections endpoint query for search: {endpoint}")
             self.save_progress(f"Detections endpoint query for search: {endpoint}")
@@ -2195,7 +2225,7 @@ class ChronicleConnector(BaseConnector):
             if not self._check_last_run_hash(last_run_user_alert_hash_digest, curr_run_user_alert_hash_digest, user_alert):
                 user_alerts.append(user_alert)
 
-        self._last_run_hash_digests[GC_RM_USER_ALERTS] = curr_run_user_alert_hash_digest
+        self._pending_hash_digests[GC_RM_USER_ALERTS].extend(curr_run_user_alert_hash_digest)
 
         return user_alerts
 
@@ -2282,7 +2312,7 @@ class ChronicleConnector(BaseConnector):
             if not self._check_last_run_hash(last_run_alert_hash_digest, curr_run_alert_hash_digest, alert):
                 alerts.append(alert)
 
-        self._last_run_hash_digests[GC_RM_ASSET_ALERTS] = curr_run_alert_hash_digest
+        self._pending_hash_digests[GC_RM_ASSET_ALERTS].extend(curr_run_alert_hash_digest)
 
         return alerts
 
@@ -2539,7 +2569,7 @@ class ChronicleConnector(BaseConnector):
             # Add detections into parsed detections
             parsed_detections.append(detection)
 
-        self._last_run_hash_digests[run_mode] = curr_run_detections_hash_digest
+        self._pending_hash_digests[run_mode].extend(curr_run_detections_hash_digest)
 
         self.debug_print(f"Total parsed {run_mode} detections after deduplication: {len(parsed_detections)}")
 
@@ -2627,8 +2657,8 @@ class ChronicleConnector(BaseConnector):
 
         # Fetch user_alerts data
         if GC_RM_USER_ALERTS in self._run_mode:
-            start_time = self._time_dict[GC_RM_ASSET_ALERTS][GC_START_TIME_KEY]
-            end_time = self._time_dict[GC_RM_ASSET_ALERTS][GC_END_TIME_KEY]
+            start_time = self._time_dict[GC_RM_USER_ALERTS][GC_START_TIME_KEY]
+            end_time = self._time_dict[GC_RM_USER_ALERTS][GC_END_TIME_KEY]
             ret_val, response = self._fetch_alerts(action_result, client, start_time, end_time, self._max_results)
 
         if phantom.is_fail(ret_val):
@@ -2682,7 +2712,7 @@ class ChronicleConnector(BaseConnector):
         return phantom.APP_SUCCESS, results
 
     def _check_for_existing_container(self, name):
-        """Check for existing container and return container ID and and remaining margin count.
+        """Check the asset-local state for a previously created ingestion container.
 
         Parameters:
             :param name: Name of the container to check
@@ -2693,10 +2723,15 @@ class ChronicleConnector(BaseConnector):
         cid = None
         count = None
 
-        url = f'{self.get_phantom_base_url()}rest/container?_filter_name__contains="{name}"&sort=start_time&order=desc'
+        cid = self._state.get("ingest_container_ids", {}).get(name)
+        if not cid:
+            self.debug_print("No asset-owned existing container is recorded")
+            return phantom.APP_ERROR, None, count
+
+        url = f"{self.get_phantom_base_url()}rest/container/{cid}"
 
         try:
-            r = requests.get(url, verify=self._verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+            r = requests.get(url, verify=self._verify, timeout=30)
         except Exception as e:
             self.debug_print(f"Error making local rest call: {e!s}")
             self.debug_print(f"DB QUERY: {url}")
@@ -2708,20 +2743,13 @@ class ChronicleConnector(BaseConnector):
             self.debug_print(f"Exception caught: {e!s}")
             return phantom.APP_ERROR, cid, count
 
-        container = resp_json.get("data", [])
-        if not container:
-            self.debug_print("Not having any existing container")
-            return phantom.APP_ERROR, cid, count
-
-        # Consider latest container as existing container from the received list of containers
-        try:
-            container = container[0]
-            if not isinstance(container, dict):
-                self.debug_print("Invalid response received while checking for the existing container")
-                return phantom.APP_ERROR, cid, count
-        except Exception as e:
-            self.debug_print(f"Invalid response received while checking for the existing container. Error: {e!s}")
-            return phantom.APP_ERROR, cid, count
+        container = resp_json.get("data", resp_json)
+        if isinstance(container, list):
+            container = container[0] if container else None
+        if not isinstance(container, dict) or container.get("id") != cid or not container.get("name", "").startswith(f"{name} "):
+            self.debug_print("Recorded ingestion container is missing or no longer matches this run mode")
+            self._state.get("ingest_container_ids", {}).pop(name, None)
+            return phantom.APP_ERROR, None, count
 
         cid = container.get("id")
         artifact_count = container.get("artifact_count")
@@ -2734,6 +2762,7 @@ class ChronicleConnector(BaseConnector):
             # Not having space in latest container or exceed a configured limit for artifacts
             if count <= 0:
                 self.debug_print("Not having enough space for the artifacts in the existing container")
+                self._state.get("ingest_container_ids", {}).pop(name, None)
                 cid = None
                 count = None
         except Exception as e:
@@ -2936,6 +2965,8 @@ class ChronicleConnector(BaseConnector):
             container.update({"name": f"{key} {datetime.utcnow().strftime(GC_DATE_FORMAT)}", "artifacts": artifacts})
             ret_val, message, cid = self.save_container(container)
             self.debug_print(f"save_container (with artifacts) returns, value: {ret_val}, reason: {message}, id: {cid}")
+            if phantom.is_success(ret_val) and cid:
+                self._state.setdefault("ingest_container_ids", {})[key] = cid
 
         return ret_val, message, cid
 
@@ -2947,7 +2978,7 @@ class ChronicleConnector(BaseConnector):
             :param run_mode: current run_mode for which artifacts will be saved
             :param key: name of the container in which data will be ingested
         Returns:
-            :return: None
+            :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
         # Initialize
         cid = None
@@ -2956,7 +2987,7 @@ class ChronicleConnector(BaseConnector):
 
         # If not results return
         if not results:
-            return
+            return phantom.APP_SUCCESS
 
         # Check for existing container only if it's a scheduled/interval poll and not first run
         if not (self._is_poll_now or self._is_first_run[run_mode]):
@@ -2968,7 +2999,7 @@ class ChronicleConnector(BaseConnector):
             ret_val = self._ingest_artifacts(results[:count], key, cid=cid)
             if phantom.is_fail(ret_val):
                 self.debug_print("Failed to save ingested artifacts in the existing container")
-                return
+                return phantom.APP_ERROR
             # One part is ingested
             start = count
 
@@ -2979,7 +3010,9 @@ class ChronicleConnector(BaseConnector):
             ret_val = self._ingest_artifacts(artifacts_list, key)
             if phantom.is_fail(ret_val):
                 self.debug_print("Failed to save ingested artifacts in the new container")
-                return
+                return phantom.APP_ERROR
+
+        return phantom.APP_SUCCESS
 
     def _ingest_artifacts(self, artifacts, key, cid=None):
         """Ingest artifacts into the Phantom server.
@@ -3000,7 +3033,7 @@ class ChronicleConnector(BaseConnector):
 
         return phantom.APP_SUCCESS
 
-    def _save_results(self, results):
+    def _save_results(self, action_result, results):
         """Parse results and ingest results into the Phantom server.
 
         Parameters:
@@ -3025,6 +3058,7 @@ class ChronicleConnector(BaseConnector):
             self.save_progress(f"Error occurred while creating artifacts for IoCs. Error: {e!s}")
             # Make iocs as empty list
             iocs = list()
+            self._failed_run_modes.add(GC_RM_IOC_DOMAINS)
 
         # Create artifacts from the alerts results
         try:
@@ -3036,6 +3070,7 @@ class ChronicleConnector(BaseConnector):
             self.save_progress(f"Error occurred while creating artifacts for alerts. Error: {e!s}")
             # Make alerts as empty list
             alerts = list()
+            self._failed_run_modes.add(GC_RM_ASSET_ALERTS)
 
         # Create artifacts from the user alerts results
         try:
@@ -3047,6 +3082,7 @@ class ChronicleConnector(BaseConnector):
             self.save_progress(f"Error occurred while creating artifacts for user alerts. Error: {e!s}")
             # Make alerts as empty list
             user_alerts = list()
+            self._failed_run_modes.add(GC_RM_USER_ALERTS)
 
         # Create artifacts from the alerting detections results
         try:
@@ -3057,43 +3093,32 @@ class ChronicleConnector(BaseConnector):
         except Exception as e:
             self.debug_print(f"Error occurred while creating artifacts for detections. Error: {e!s}")
             self.save_progress(f"Error occurred while creating artifacts for detections. Error: {e!s}")
-            # Make alerts as empty list
-            alerts = list()
+            alerting_detections = list()
+            not_alerting_detections = list()
+            self._failed_run_modes.update({GC_RM_ALERTING_DETECTIONS, GC_RM_NOT_ALERTING_DETECTIONS})
 
-        # Save artifacts for IoCs
-        try:
-            self.debug_print("Try to ingest artifacts for the IoC domain matches")
-            self._save_artifacts(iocs, run_mode=GC_RM_IOC_DOMAINS, key=GC_IOC_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for IoCs. Error: {e!s}")
+        save_operations = (
+            (iocs, GC_RM_IOC_DOMAINS, GC_IOC_RUN_MODE_KEY),
+            (alerts, GC_RM_ASSET_ALERTS, GC_ALERT_RUN_MODE_KEY),
+            (user_alerts, GC_RM_USER_ALERTS, GC_USER_ALERT_RUN_MODE_KEY),
+            (alerting_detections, GC_RM_ALERTING_DETECTIONS, GC_ALERTING_DETECTION_RUN_MODE_KEY),
+            (not_alerting_detections, GC_RM_NOT_ALERTING_DETECTIONS, GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY),
+        )
+        for artifacts, run_mode, key in save_operations:
+            if run_mode not in self._run_mode or run_mode in self._failed_run_modes:
+                continue
+            try:
+                self.debug_print(f"Try to ingest artifacts for {key}")
+                ret_val = self._save_artifacts(artifacts, run_mode=run_mode, key=key)
+                if phantom.is_fail(ret_val):
+                    self._failed_run_modes.add(run_mode)
+            except Exception as e:
+                self.debug_print(f"Error occurred while saving artifacts for {key}. Error: {e!s}")
+                self._failed_run_modes.add(run_mode)
 
-        # Save artifacts for alerts
-        try:
-            self.debug_print("Try to ingest artifacts for the alerts")
-            self._save_artifacts(alerts, run_mode=GC_RM_ASSET_ALERTS, key=GC_ALERT_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for alerts. Error: {e!s}")
-
-        # Save artifacts for user alerts
-        try:
-            self.debug_print("Try to ingest artifacts for the user alerts")
-            self._save_artifacts(user_alerts, run_mode=GC_RM_USER_ALERTS, key=GC_USER_ALERT_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for user alerts. Error: {e!s}")
-
-        # Save artifacts for alerting detections
-        try:
-            self.debug_print("Try to ingest artifacts for the alerting detections")
-            self._save_artifacts(alerting_detections, run_mode=GC_RM_ALERTING_DETECTIONS, key=GC_ALERTING_DETECTION_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for alerting detections. Error: {e!s}")
-
-        # Save artifacts for not alerting detections
-        try:
-            self.debug_print("Try to ingest artifacts for the not alerting detections")
-            self._save_artifacts(not_alerting_detections, run_mode=GC_RM_NOT_ALERTING_DETECTIONS, key=GC_NOT_ALERTING_DETECTION_RUN_MODE_KEY)
-        except Exception as e:
-            self.debug_print(f"Error occurred while saving artifacts for not alerting detections. Error: {e!s}")
+        if self._failed_run_modes:
+            failed_modes = ", ".join(sorted(self._failed_run_modes))
+            return action_result.set_status(phantom.APP_ERROR, f"Failed to ingest all results for run mode(s): {failed_modes}")
 
         return phantom.APP_SUCCESS
 
@@ -3103,6 +3128,19 @@ class ChronicleConnector(BaseConnector):
         Returns:
             :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
         """
+        if not isinstance(self._state.get("ingest_container_ids"), dict):
+            self._state["ingest_container_ids"] = {}
+        else:
+            # Keep one latest container id per fixed ingestion run-mode label. This
+            # state is bounded by GC_RM_ON_POLL_DICT and does not grow per container.
+            self._state["ingest_container_ids"] = {
+                key: value for key, value in self._state["ingest_container_ids"].items() if key in GC_RM_ON_POLL_DICT and value
+            }
+
+        for run_mode, hashes in self._pending_hash_digests.items():
+            if run_mode not in self._failed_run_modes:
+                self._last_run_hash_digests[run_mode] = hashes
+
         # Updating the last run hash digest for scheduled/interval or manual polling
         self._state["last_run_hash_digests"] = self._last_run_hash_digests
 
@@ -3112,7 +3150,8 @@ class ChronicleConnector(BaseConnector):
 
         # As end_alert_time has current time, we are saving current time as last run time for both alert and IoCs.
         for run_mode in self._run_mode:
-            self._state[f"last_run_{run_mode}_time"] = self._time_dict.get(run_mode, {}).get(GC_END_TIME_KEY)
+            if run_mode not in self._failed_run_modes:
+                self._state[f"last_run_{run_mode}_time"] = self._time_dict.get(run_mode, {}).get(GC_END_TIME_KEY)
 
         return phantom.APP_SUCCESS
 
@@ -3133,6 +3172,9 @@ class ChronicleConnector(BaseConnector):
             GC_RM_ALERTING_DETECTIONS,
             GC_RM_NOT_ALERTING_DETECTIONS,
         ]
+
+        self._pending_hash_digests = defaultdict(list)
+        self._failed_run_modes = set()
 
         # Fetch ingestion run mode
         self._run_mode = GC_RM_ON_POLL_DICT.get(config.get("run_mode", "All"), DEFAULT_ALL_MODE_LIST)
@@ -3167,16 +3209,17 @@ class ChronicleConnector(BaseConnector):
         # Parse results as per the given ingestion run mode
         self.debug_print("Ingest results as per the given ingestion run mode")
         self.save_progress("Ingest results as per the given ingestion run mode")
-        ret_val = self._save_results(results)
+        ret_val = self._save_results(action_result, results)
+
+        # Save state as per the configured ingestion run mode
+        state_ret_val = self._save_state()
+        if phantom.is_fail(state_ret_val):
+            self.debug_print("Failed to save the last run state as per the given ingestion run mode")
+            return action_result.get_status()
+
         if phantom.is_fail(ret_val):
             self.debug_print("Failed to ingest the results as per the given ingestion run mode")
             self.save_progress("Failed to ingest the results as per the given ingestion run mode")
-            return action_result.get_status()
-
-        # Save state as per the configured ingestion run mode
-        ret_val = self._save_state()
-        if phantom.is_fail(ret_val):
-            self.debug_print("Failed to save the last run state as per the given ingestion run mode")
             return action_result.get_status()
 
         # Return success

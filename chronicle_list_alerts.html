@@ -11,7 +11,7 @@
 {% block widget_content %}
   <!-- Main Start Block -->
   <!-- File: chronicle_list_alerts.html
-    Copyright (c) 2020-2025 Splunk Inc.
+    Copyright (c) 2020-2026 Splunk Inc.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@
               <td>
                 <a class="no-word-wrap"
                    href="javascript:;"
-                   onclick="context_menu(this, [{'contains': ['gc time range'], 'value':'{{ result.param.time_range }}' }], 0, {{ container.id }}, null, false);">
+                   onclick="context_menu(this, [{'contains': ['gc time range'], 'value':'{{ result.param.time_range|escapejs }}' }], 0, {{ container.id }}, null, false);">
                   {{ result.param.time_range }}
                   &nbsp;
                   <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -131,7 +131,7 @@
               <td>
                 <a class="no-word-wrap"
                    href="javascript:;"
-                   onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ result.param.start_time }}' }], 0, {{ container.id }}, null, false);">
+                   onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ result.param.start_time|escapejs }}' }], 0, {{ container.id }}, null, false);">
                   {{ result.param.start_time }}
                   &nbsp;
                   <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -145,7 +145,7 @@
               <td>
                 <a class="no-word-wrap"
                    href="javascript:;"
-                   onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ result.param.end_time }}' }], 0, {{ container.id }}, null, false);">
+                   onclick="context_menu(this, [{'contains': ['gc time'], 'value':'{{ result.param.end_time|escapejs }}' }], 0, {{ container.id }}, null, false);">
                   {{ result.param.end_time }}
                   &nbsp;
                   <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -194,7 +194,7 @@
                                     <li style="list-style-type:none;">
                                       <a class="no-word-wrap"
                                          href="javascript:;"
-                                         onclick="context_menu(this, [{'contains': ['ip', 'host name', 'gc mac', 'gc product id'], 'value':'{{ a }}' }], 0, {{ container.id }}, null, false);">
+                                         onclick="context_menu(this, [{'contains': ['ip', 'host name', 'gc mac', 'gc product id'], 'value':'{{ a|escapejs }}' }], 0, {{ container.id }}, null, false);">
                                         {{ a }}
                                         &nbsp;
                                         <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -235,7 +235,7 @@
                               <td>
                                 <a class="no-word-wrap"
                                    href="javascript:;"
-                                   onclick="context_menu(this, [{'contains': ['ip', 'host name', 'gc mac', 'gc product id'], 'value':'{{ value }}' }], 0, {{ container.id }}, null, false);">
+                                   onclick="context_menu(this, [{'contains': ['ip', 'host name', 'gc mac', 'gc product id'], 'value':'{{ value|escapejs }}' }], 0, {{ container.id }}, null, false);">
                                   {{ value }}
                                   &nbsp;
                                   <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -297,7 +297,7 @@
                                     <li style="list-style-type:none;">
                                       <a class="no-word-wrap"
                                          href="javascript:;"
-                                         onclick="context_menu(this, [{'contains': ['email', 'gc username', 'user name', 'gc email'], 'value':'{{ a }}' }], 0, {{ container.id }}, null, false);">
+                                         onclick="context_menu(this, [{'contains': ['email', 'gc username', 'user name', 'gc email'], 'value':'{{ a|escapejs }}' }], 0, {{ container.id }}, null, false);">
                                         {{ a }}
                                         &nbsp;
                                         <span class="fa fa-caret-down" style="font-size: smaller;"></span>
@@ -338,7 +338,7 @@
                               <td>
                                 <a class="no-word-wrap"
                                    href="javascript:;"
-                                   onclick="context_menu(this, [{'contains': ['email', 'gc username', 'user name', 'gc email'], 'value':'{{ value }}' }], 0, {{ container.id }}, null, false);">
+                                   onclick="context_menu(this, [{'contains': ['email', 'gc username', 'user name', 'gc email'], 'value':'{{ value|escapejs }}' }], 0, {{ container.id }}, null, false);">
                                   {{ value }}
                                   &nbsp;
                                   <span class="fa fa-caret-down" style="font-size: smaller;"></span>
